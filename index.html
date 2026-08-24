@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benefit–Risk Workbench — companion to Practical Benefit–Risk Assessment in Pharmacovigilance</title>
+<meta name="description" content="Educational companion tool to the book Practical Benefit-Risk Assessment in Pharmacovigilance. Not medical advice. Fictional example data. Personal views of the author only.">
+<style>
+/* ============================================================ *
+ *  Benefit-Risk Workbench — single file, no external requests   *
+ * ============================================================ */
+:root{
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --ink:#1c2126; --ink2:#404b55; --muted:#6d7780; --faint:#8d959c;
+  --line:#d8d3c9; --line2:#ebe7df; --paper:#faf9f6; --card:#ffffff;
+  --accent:#2f5d7c; --accent2:#eaf0f4; --accent3:#dbe5ec;
+  --ben:#2c6157; --risk:#8f4630;
+  --warnbg:#fdf7ea; --warnline:#c8a54a; --warnink:#6b5312;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+h1,h2,h3,h4,h5{font-family:var(--serif); font-weight:600; line-height:1.25; margin:0 0 .4em}
+h1{font-size:1.5rem; letter-spacing:.01em}
+h2{font-size:1.35rem; margin-top:0}
+h3{font-size:1.1rem; margin-top:1.8em}
+h4{font-size:.98rem; margin-top:1.4em}
+p{margin:0 0 .9em}
+a{color:var(--accent)}
+small,.small{font-size:.8rem}
+.muted{color:var(--muted)}
+.lede{color:var(--ink2); max-width:74ch}
+hr{border:0;border-top:1px solid var(--line2); margin:1.8em 0}
+[hidden]{display:none !important}
+
+/* ---------- buttons, inputs ---------- */
+button{
+  font:inherit; font-size:.86rem; color:var(--ink); background:var(--card);
+  border:1px solid var(--line); border-radius:3px; padding:.42em .8em;
+  cursor:pointer; min-height:34px;
+}
+button:hover{background:var(--accent2); border-color:var(--accent3)}
+button:disabled{opacity:.45; cursor:not-allowed; background:var(--card)}
+button.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+button.primary:hover{background:#26506c}
+button.primary:disabled{background:var(--muted); border-color:var(--muted)}
+button.tiny{font-size:.75rem; padding:.2em .45em; min-height:26px; line-height:1}
+input[type=text], input[type=number], input[type=date], select, textarea{
+  font:inherit; font-size:.88rem; color:var(--ink); background:#fff;
+  border:1px solid var(--line); border-radius:3px; padding:.36em .45em; width:100%;
+  min-height:32px;
+}
+textarea{line-height:1.5; resize:vertical}
+input:focus, select:focus, textarea:focus, [contenteditable]:focus, button:focus{
+  outline:2px solid var(--accent3); outline-offset:1px;
+}
+label{display:block; font-size:.76rem; letter-spacing:.03em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:.2em}
+.field{margin-bottom:.7em}
+.grid{display:grid; gap:.7em 1em}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:820px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.row{display:flex; flex-wrap:wrap; gap:.5em; align-items:center}
+.toolbar{display:flex; flex-wrap:wrap; gap:.45em; margin:.9em 0}
+
+/* ---------- gate ---------- */
+.gate{max-width:800px; margin:0 auto; padding:3.5vh 1.2rem 6rem}
+.gate .brand{font-family:var(--serif); font-size:.82rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:1.4em}
+.gate h1{font-size:1.85rem; margin-bottom:.15em}
+.gate .sub{font-family:var(--serif); font-style:italic; color:var(--ink2); margin-bottom:2em}
+.gate-card{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:1.6rem 1.5rem}
+.gate ul.ack{list-style:none; margin:0 0 1.2em; padding:0}
+.gate ul.ack li{position:relative; padding-left:1.1em; margin-bottom:.55em; color:var(--ink2); font-size:.94rem}
+.gate ul.ack li::before{content:""; position:absolute; left:0; top:.62em; width:5px; height:5px;
+  background:var(--accent); border-radius:50%}
+.gate ul.ack li strong{color:var(--ink)}
+.ackbox{display:flex; gap:.6em; align-items:flex-start; background:var(--accent2);
+  border:1px solid var(--accent3); border-radius:3px; padding:.85em .9em; margin:1.3em 0 1.1em}
+.ackbox input{width:18px; height:18px; margin-top:.15em; flex:0 0 auto}
+.ackbox label{text-transform:none; letter-spacing:0; font-size:.92rem; color:var(--ink); margin:0}
+details.terms{border-top:1px solid var(--line2); margin-top:1.2em; padding-top:.8em}
+details.terms summary{cursor:pointer; font-size:.86rem; color:var(--accent); font-weight:600}
+details.terms ol{font-size:.83rem; color:var(--ink2); line-height:1.5; padding-left:1.3em; margin-top:.9em}
+details.terms ol li{margin-bottom:.55em}
+details.terms ol li b{color:var(--ink)}
+
+/* ---------- header ---------- */
+header.app{position:sticky; top:0; z-index:20; background:var(--card);
+  border-bottom:1px solid var(--line)}
+.head-in{max-width:1180px; margin:0 auto; padding:.65rem 1.1rem .55rem;
+  display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap}
+.head-t{flex:1 1 320px; min-width:0}
+.head-t .bt{font-family:var(--serif); font-size:1.02rem; font-weight:600; line-height:1.25}
+.head-t .au{font-size:.79rem; color:var(--muted)}
+.strip{font-size:.72rem; letter-spacing:.04em; color:var(--warnink); background:var(--warnbg);
+  border:1px solid var(--warnline); border-radius:2px; padding:.18em .5em; display:inline-block; margin-top:.3em}
+.head-a{display:flex; gap:.4em; align-items:center}
+nav.tabs{max-width:1180px; margin:0 auto; padding:0 .7rem; display:flex; gap:.1em;
+  overflow-x:auto; -webkit-overflow-scrolling:touch}
+nav.tabs button{border:0; background:none; border-bottom:2px solid transparent; border-radius:0;
+  padding:.55em .7em; font-size:.83rem; color:var(--muted); white-space:nowrap; min-height:40px}
+nav.tabs button:hover{background:none; color:var(--ink)}
+nav.tabs button[aria-selected=true]{color:var(--accent); border-bottom-color:var(--accent); font-weight:600}
+nav.tabs .sep{flex:0 0 1px; background:var(--line2); margin:.6em .5em}
+
+/* ---------- panels ---------- */
+main{max-width:1180px; margin:0 auto; padding:1.6rem 1.1rem 5rem}
+.panel{display:none}
+.panel.active{display:block}
+.panel > .lede{margin-bottom:1.6em}
+.card{background:var(--card); border:1px solid var(--line); border-radius:4px;
+  padding:1.1rem 1.1rem .95rem; margin-bottom:1.2rem}
+.card > h3:first-child, .card > h2:first-child{margin-top:0}
+.note{font-size:.82rem; color:var(--muted); border-left:2px solid var(--line); padding-left:.75em; margin:.8em 0}
+.warnband{background:var(--warnbg); border:1px solid var(--warnline); border-left-width:4px;
+  border-radius:3px; padding:.8em 1em; font-size:.85rem; color:var(--warnink); margin-bottom:1.3rem}
+.warnband b{color:#4d3c08}
+.pill{display:inline-block; font-size:.7rem; letter-spacing:.05em; text-transform:uppercase;
+  border:1px solid var(--line); border-radius:2px; padding:.1em .45em; color:var(--muted)}
+.pill.ben{color:var(--ben); border-color:#bcd2cc; background:#f2f7f5}
+.pill.risk{color:var(--risk); border-color:#e0c4b8; background:#faf2ef}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:3px; background:#fff}
+table{border-collapse:collapse; width:100%; font-size:.84rem}
+th,td{text-align:left; padding:.45em .55em; border-bottom:1px solid var(--line2); vertical-align:top}
+thead th{background:#f4f2ee; font-size:.73rem; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--ink2); font-weight:600; border-bottom:1px solid var(--line); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
+tr.grouphead td{background:#f4f2ee; font-family:var(--serif); font-weight:600; font-size:.85rem}
+tr.total td{background:#f7f6f2; font-weight:600; border-top:1px solid var(--line)}
+td[contenteditable]{min-width:90px}
+td[contenteditable]:focus{background:#fffdf5}
+table input, table select{font-size:.8rem; padding:.25em .3em; min-height:28px}
+.rowbtns{white-space:nowrap}
+.cellnote{display:block; font-size:.7rem; color:var(--faint); font-family:var(--mono); margin-top:.15em}
+
+/* ---------- stats ---------- */
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:.8em; margin:1em 0}
+.stat{border:1px solid var(--line2); border-radius:3px; padding:.6em .7em; background:#fdfdfb}
+.stat .k{font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.stat .v{font-family:var(--serif); font-size:1.32rem; font-variant-numeric:tabular-nums; line-height:1.2; margin:.1em 0 .15em}
+.stat .v.small{font-size:1.02rem}
+.stat .f{font-size:.7rem; color:var(--faint); font-family:var(--mono); line-height:1.35; word-break:break-word}
+.stat.hero{background:var(--accent2); border-color:var(--accent3)}
+.stat.hero .v{color:var(--accent)}
+.canoncheck{font-size:.78rem; color:var(--ben); background:#f2f7f5; border:1px solid #cfe0da;
+  border-radius:3px; padding:.5em .7em; margin-top:.4em}
+
+/* ---------- method selector ---------- */
+.q{font-family:var(--serif); font-size:1.15rem; margin-bottom:.25em}
+.qhelp{font-size:.86rem; color:var(--muted); margin-bottom:.9em}
+.answers{display:flex; flex-direction:column; gap:.45em; max-width:70ch}
+.answers button{text-align:left; padding:.65em .8em; line-height:1.4; font-size:.9rem}
+.trail{font-size:.8rem; color:var(--muted); margin-bottom:1.2em}
+.trail div{padding:.15em 0; border-left:2px solid var(--line2); padding-left:.7em}
+.trail b{color:var(--ink2); font-weight:600}
+.terminal{border:1px solid var(--accent3); background:var(--accent2); border-radius:4px; padding:1rem 1.1rem}
+.terminal .tl{font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent)}
+.terminal h3{font-family:var(--serif); margin:.15em 0 .5em; font-size:1.25rem}
+.mrow{font-size:.82rem; margin-top:.9em}
+.mrow div{padding:.28em 0; border-bottom:1px solid var(--accent3); display:grid;
+  grid-template-columns:minmax(120px,180px) 1fr; gap:.6em}
+.mrow div:last-child{border-bottom:0}
+.mrow k{color:var(--accent); font-size:.72rem; letter-spacing:.04em; text-transform:uppercase; padding-top:.2em}
+
+/* ---------- proact ---------- */
+.pel{border:1px solid var(--line2); border-radius:3px; padding:.8em .9em; margin-bottom:.8em; background:#fdfdfb}
+.pel.flag{border-color:var(--warnline); background:var(--warnbg)}
+.pel .ph{display:flex; gap:.6em; align-items:baseline; margin-bottom:.25em}
+.pel .badge{font-family:var(--serif); font-weight:700; color:var(--accent); font-size:1.05rem;
+  min-width:2.1em}
+.pel .pn{font-family:var(--serif); font-size:1.02rem}
+.pel .pp{font-size:.8rem; color:var(--muted); margin:.15em 0 .5em; line-height:1.45}
+.meter{height:6px; background:var(--line2); border-radius:3px; overflow:hidden; margin:.4em 0 .2em}
+.meter i{display:block; height:100%; background:var(--accent)}
+
+/* ---------- wording ---------- */
+.wgroup{margin-bottom:1.6rem}
+.wpat{border:1px solid var(--line2); border-radius:3px; padding:.75em .9em; margin-bottom:.7em; background:#fdfdfb}
+.wpat .wt{font-size:.78rem; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); margin-bottom:.3em}
+.wpat .wx{font-family:var(--serif); font-size:.95rem; line-height:1.6; color:var(--ink)}
+.wpat .wx s{text-decoration:none; background:#f2ede0; border-bottom:1px solid #d8ceb4;
+  padding:0 .1em; border-radius:2px; font-style:italic}
+.wpat .wc{font-size:.79rem; color:var(--muted); margin-top:.5em; border-left:2px solid var(--line); padding-left:.7em}
+.wpat .wb{margin-top:.6em; display:flex; gap:.4em; align-items:center}
+.copied{font-size:.76rem; color:var(--ben)}
+
+/* ---------- report ---------- */
+.rep h3{border-bottom:1px solid var(--line); padding-bottom:.25em}
+.rep .empty{font-size:.85rem; color:var(--faint); font-style:italic}
+.rep dl{display:grid; grid-template-columns:minmax(120px,190px) 1fr; gap:.15em .8em; font-size:.86rem; margin:0}
+.rep dt{color:var(--muted); font-size:.78rem; letter-spacing:.03em; text-transform:uppercase; padding-top:.15em}
+.rep dd{margin:0}
+.rep .qa{font-size:.86rem; margin-bottom:.5em}
+.rep .qa b{font-family:var(--serif)}
+.rep blockquote{margin:0 0 .8em; padding-left:.8em; border-left:2px solid var(--line);
+  font-family:var(--serif); font-size:.92rem; white-space:pre-wrap}
+
+/* ---------- print ---------- */
+#print-head,#print-foot,#terms-print{display:none}
+@media print{
+  @page{margin:19mm 13mm 19mm 13mm}
+  html,body{background:#fff}
+  body{font-size:10pt; line-height:1.45}
+  header.app,nav.tabs,.no-print,.gate,.toolbar,button,.head-a,.ctl{display:none !important}
+  main{max-width:none; padding:0}
+  .panel{display:none}
+  .panel.active{display:block}
+  .card{border:0; padding:0; margin:0 0 .8rem; break-inside:auto}
+  .tablewrap{overflow:visible; border:1px solid #999}
+  table{font-size:8.4pt}
+  thead{display:table-header-group}
+  tr{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat{background:#fff !important; border:1px solid #bbb}
+  input,select,textarea{border:0; padding:0; background:none; font-size:9.6pt; min-height:0}
+  textarea{height:auto !important; overflow:visible}
+  #print-head{display:block; position:fixed; top:-12mm; left:0; right:0;
+    font-size:7.4pt; letter-spacing:.05em; text-transform:uppercase; color:#444;
+    border-bottom:.5pt solid #999; padding-bottom:1.2mm}
+  #print-foot{display:block; position:fixed; bottom:-13mm; left:0; right:0;
+    font-size:7.6pt; text-align:center; color:#333; background:#f4f0e4;
+    border:.5pt solid #b9a25a; padding:1.2mm 2mm}
+  #terms-print{display:block; break-before:page; page-break-before:always}
+  #terms-print ol{font-size:8pt; line-height:1.4; padding-left:1.2em}
+  #terms-print li{margin-bottom:.35em}
+  a{color:#000; text-decoration:none}
+}
+</style>
+  <meta name="description" content="A free benefit-risk assessment workbench for pharmacovigilance: NNT/NNH with Altman confidence intervals, effects tables, MCDA with swing weighting, BRAT and PrOACT-URL worksheets, and a conclusion wording library. Companion to the book by Dr. Hafez Selim, MD, PhD.">
+  <meta name="author" content="Dr. Hafez Selim, MD, PhD">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://abdu94-hash.github.io/benefit-risk-workbench/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Selim Medical Press">
+  <meta property="og:title" content="Benefit-Risk Workbench">
+  <meta property="og:description" content="Companion tool to Practical Benefit-Risk Assessment in Pharmacovigilance. Educational use only; not medical advice; all example data fictional.">
+  <meta property="og:url" content="https://abdu94-hash.github.io/benefit-risk-workbench/">
+  <meta property="og:image" content="https://abdu94-hash.github.io/benefit-risk-workbench/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Benefit-Risk Workbench">
+  <meta name="twitter:image" content="https://abdu94-hash.github.io/benefit-risk-workbench/og-image.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231a1a1a'/%3E%3Cpath d='M14 40h10V26H14zM27 40h10V18H27zM40 40h10V32H40z' fill='%23fff'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ================= ACCEPTANCE GATE ================= -->
+<div class="gate" id="gate">
+  <div class="brand">Selim Medical Press</div>
+  <h1>Benefit–Risk Workbench</h1>
+  <div class="sub">Companion tool to <em>Practical Benefit–Risk Assessment in Pharmacovigilance:
+    From Safety Signals to Regulatory Decisions</em> — Dr Hafez Selim, MD, PhD</div>
+
+  <div class="gate-card">
+    <h2>Before you begin</h2>
+    <p class="lede small" style="margin-bottom:1.2em">This tool structures and computes. It does not
+      conclude. Read the following, then acknowledge it.</p>
+    <ul class="ack">
+      <li><strong>Educational use only.</strong> This workbench accompanies a textbook and exists to
+        teach the instruments in it.</li>
+      <li><strong>Not medical advice</strong>, not clinical decision support, and not for use in the
+        care of any individual patient.</li>
+      <li><strong>Not a medical device</strong> and not validated regulatory submission software. No
+        output may be filed as computed here without independent verification.</li>
+      <li><strong>All worked-example data are fictional.</strong> Therapex, therapexib and every
+        companion case are inventions for teaching, with no relation to any real product.</li>
+      <li><strong>The views expressed are the author's personal views only</strong> and do not
+        represent any current or former employer, client, institution, professional society or
+        regulatory body.</li>
+      <li><strong>You are responsible for verifying regulatory requirements</strong> against current
+        source documents; guidance and legislation change, and this tool is not a legal reference.</li>
+    </ul>
+
+    <div class="ackbox">
+      <input type="checkbox" id="ackbox" aria-describedby="acklab">
+      <label for="ackbox" id="acklab">I have read and accept the terms above and the full terms below,
+        and I understand that this is an educational tool only.</label>
+    </div>
+    <button id="beginBtn" class="primary" disabled>Begin</button>
+
+    <details class="terms" id="gateTerms">
+      <summary>Full terms — 15 clauses</summary>
+      <ol id="terms-gate-list"></ol>
+    </details>
+  </div>
+</div>
+
+<!-- ================= APPLICATION ================= -->
+<div id="app" hidden>
+
+<header class="app">
+  <div class="head-in">
+    <div class="head-t">
+      <div class="bt">Benefit–Risk Workbench <span class="muted" style="font-weight:400">·
+        Practical Benefit–Risk Assessment in Pharmacovigilance</span></div>
+      <div class="au">Dr Hafez Selim, MD, PhD · Selim Medical Press</div>
+      <div class="strip">Not medical advice · Fictional data · Personal views only</div>
+    </div>
+    <div class="head-a">
+      <button id="printBtn" title="Assemble the report screen and open the print dialogue">Print report</button>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-panel="method" aria-selected="true">Method selector</button>
+    <button role="tab" data-panel="nnt" aria-selected="false">NNT / NNH</button>
+    <button role="tab" data-panel="effects" aria-selected="false">Effects table</button>
+    <button role="tab" data-panel="mcda" aria-selected="false">MCDA</button>
+    <button role="tab" data-panel="brat" aria-selected="false">BRAT</button>
+    <button role="tab" data-panel="proact" aria-selected="false">PrOACT-URL</button>
+    <button role="tab" data-panel="wording" aria-selected="false">Wording library</button>
+    <span class="sep"></span>
+    <button role="tab" data-panel="report" aria-selected="false">Report</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ---------- 1. METHOD SELECTOR ---------- -->
+<section class="panel active" id="p-method" role="tabpanel">
+  <h2>Method selector</h2>
+  <p class="lede">The decision tree of Chapter 18, as a questionnaire. It is entered with a decision
+    that must be made and a body of evidence already assembled; it presumes the problem has been
+    framed well enough to name the alternatives. Every question before the last two is about the
+    problem, not about the method.</p>
+  <div class="card">
+    <div class="trail" id="msTrail"></div>
+    <div id="msQuestion"></div>
+    <div id="msResult"></div>
+    <div class="toolbar"><button id="msRestart">Start again</button></div>
+  </div>
+</section>
+
+<!-- ---------- 2. NNT / NNH ---------- -->
+<section class="panel" id="p-nnt" role="tabpanel">
+  <h2>NNT / NNH calculator</h2>
+  <p class="lede">Absolute effect on a per-patient scale (Chapter 12). Intervals follow Altman's
+    rules: when the risk-difference interval contains zero the NNT scale contains infinity in its
+    middle, and both arms are printed. A signed NNT is never produced — direction is carried by the
+    label, NNTB or NNTH, and never by a minus sign.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">A · Proportions — events and n in each arm</h3>
+    <div class="grid g2">
+      <div class="field"><label for="bLabel">Outcome, defined</label>
+        <input type="text" id="bLabel" value="ACR20 response at 24 weeks"></div>
+      <div class="field"><label for="bDir">Direction of the outcome</label>
+        <select id="bDir">
+          <option value="fav" selected>Favourable — an outcome you want to produce</option>
+          <option value="unfav">Unfavourable — an outcome you want to avoid causing</option>
+        </select></div>
+    </div>
+    <div class="grid g4">
+      <div class="field"><label for="bNameT">Product arm label</label><input type="text" id="bNameT" value="Therapex"></div>
+      <div class="field"><label for="bET">Events, product</label><input type="number" id="bET" value="279" min="0" step="1"></div>
+      <div class="field"><label for="bNT">n, product</label><input type="number" id="bNT" value="450" min="1" step="1"></div>
+      <div class="field"><label for="bHorizon">Time horizon t</label><input type="text" id="bHorizon" value="24 weeks"></div>
+      <div class="field"><label for="bNameC">Comparator arm label</label><input type="text" id="bNameC" value="Comparator biologic"></div>
+      <div class="field"><label for="bEC">Events, comparator</label><input type="number" id="bEC" value="261" min="0" step="1"></div>
+      <div class="field"><label for="bNC">n, comparator</label><input type="number" id="bNC" value="450" min="1" step="1"></div>
+      <div class="field"><label for="bEx">Load a worked example</label><select id="bEx"></select></div>
+    </div>
+    <div id="bOut"></div>
+    <div class="note">An NNT is not a number without its comparator and its horizon. Never compare an
+      NNTB computed at one horizon with an NNTH computed at another.</div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">B · Incidence rates — events and person-years in each arm</h3>
+    <div class="grid g2">
+      <div class="field"><label for="rLabel">Event, defined</label>
+        <input type="text" id="rLabel" value="Venous thromboembolism"></div>
+      <div class="field"><label for="rDir">Direction of the outcome</label>
+        <select id="rDir">
+          <option value="unfav" selected>Unfavourable — an outcome you want to avoid causing</option>
+          <option value="fav">Favourable — an outcome you want to produce</option>
+        </select></div>
+    </div>
+    <div class="grid g4">
+      <div class="field"><label for="rNameT">Product arm label</label><input type="text" id="rNameT" value="Therapex"></div>
+      <div class="field"><label for="rET">Events, product</label><input type="number" id="rET" value="61" min="0" step="1"></div>
+      <div class="field"><label for="rPT">Person-years, product</label><input type="number" id="rPT" value="14600" min="1" step="1"></div>
+      <div class="field"><label for="rEx">Load a worked example</label><select id="rEx"></select></div>
+      <div class="field"><label for="rNameC">Comparator arm label</label><input type="text" id="rNameC" value="Active comparator"></div>
+      <div class="field"><label for="rEC">Events, comparator</label><input type="number" id="rEC" value="18" min="0" step="1"></div>
+      <div class="field"><label for="rPC">Person-years, comparator</label><input type="number" id="rPC" value="9850" min="1" step="1"></div>
+      <div class="field"><label>&nbsp;</label><div class="small muted">Rates are expressed per 100
+        patient-years, the book's convention.</div></div>
+    </div>
+    <div id="rOut"></div>
+    <div class="note">State the NNH per year beside the NNTB for the principal benefit on the same
+      time base, and report the rate ratio alongside the rate difference — never as the headline.</div>
+  </div>
+</section>
+
+<!-- ---------- 3. EFFECTS TABLE ---------- -->
+<section class="panel" id="p-effects" role="tabpanel">
+  <h2>Effects table builder</h2>
+  <p class="lede">The EMA column set piloted under work package 5 of the benefit–risk methodology
+    project (Chapter 9). One page, or the row set is wrong. The caption must state the data source
+    per side, the population, the comparator and the rule by which rows are ordered — ordering is
+    the commonest route by which weights enter a display that claims to have none.</p>
+  <div class="card">
+    <div class="grid g3">
+      <div class="field"><label for="efComp">Comparator column heading</label>
+        <input type="text" id="efComp" value="Comparator biologic"></div>
+      <div class="field"><label for="efProd">Product column heading</label>
+        <input type="text" id="efProd" value="Therapex"></div>
+      <div class="field"><label for="efOrder">Ordering rule, for the caption</label>
+        <input type="text" id="efOrder" value="Favourable effects by size of difference against the comparator; unfavourable effects by seriousness"></div>
+    </div>
+    <div class="field"><label for="efCaption">Caption — source per side, population, comparator, horizon</label>
+      <textarea id="efCaption" rows="2">Effects table. Favourable effects from THX-301 (randomised, 24 and 52 weeks); unfavourable effects from the integrated all-exposure pool (Therapex 14,600 patient-years; comparator 9,850 patient-years). Population: adults with moderate-to-severe active rheumatoid arthritis and inadequate response to conventional synthetic DMARDs. All data fictional.</textarea></div>
+    <div class="toolbar">
+      <button id="efAddFav">Add favourable row</button>
+      <button id="efAddUnfav">Add unfavourable row</button>
+      <button id="efLoad">Load the Therapex example</button>
+      <button id="efClear">Clear all rows</button>
+    </div>
+    <div class="tablewrap"><table id="efTable">
+      <thead><tr>
+        <th class="ctl" style="width:60px">Order</th><th>Effect</th><th>Short description</th><th>Unit</th>
+        <th class="ch-comp">Comparator</th><th class="ch-prod">Product</th>
+        <th>Uncertainties / strength of evidence</th><th>References</th>
+      </tr></thead>
+      <tbody id="efBody"></tbody>
+    </table></div>
+    <div class="field" style="margin-top:1em"><label for="efNot">Effects considered and not tabulated — effect, estimate, reason (one line each)</label>
+      <textarea id="efNot" rows="2"></textarea></div>
+    <div class="note">A cell in the uncertainties column that could be pasted into another product's
+      table without alteration is not doing any work. Give every cell four parts: what is uncertain,
+      which way it moves the estimate, how far it could move it, and what would resolve it and when.</div>
+  </div>
+</section>
+
+<!-- ---------- 4. MCDA ---------- -->
+<section class="panel" id="p-mcda" role="tabpanel">
+  <h2>MCDA workbench</h2>
+  <p class="lede">A linear-additive value model with swing weights (Chapter 14). Partial value
+    v<sub>i</sub> = 100 × (x<sub>i</sub> − w<sub>i</sub>) / (b<sub>i</sub> − w<sub>i</sub>); overall
+    value V(a) = Σ ω<sub>i</sub> v<sub>i</sub>(a); and the display that matters,
+    V(d) − V(c) = Σ ω<sub>i</sub> [v<sub>i</sub>(d) − v<sub>i</sub>(c)]. The scale range is part of
+    the criterion: a weight quoted without its range has stated nothing.</p>
+  <div class="card">
+    <div class="grid g4">
+      <div class="field"><label for="mA">Alternative A</label><input type="text" id="mA" value="Therapex + cDMARD"></div>
+      <div class="field"><label for="mB">Alternative B</label><input type="text" id="mB" value="Comparator biologic + cDMARD"></div>
+      <div class="field"><label for="mC">Alternative C</label><input type="text" id="mC" value="cDMARD alone"></div>
+      <div class="field"><label for="mPair">Pairwise comparison displayed</label>
+        <select id="mPair">
+          <option value="A|C" selected>A − C</option>
+          <option value="A|B">A − B</option>
+          <option value="B|C">B − C</option>
+        </select></div>
+    </div>
+    <div class="toolbar">
+      <button id="mAdd">Add criterion</button>
+      <button id="mLoad">Load the Therapex example</button>
+      <button id="mLoadHR">Load the high-risk subgroup re-run</button>
+      <button id="mClear">Clear</button>
+    </div>
+    <div class="tablewrap"><table id="mTable">
+      <thead><tr>
+        <th class="ctl" style="width:52px">Order</th><th style="min-width:180px">Criterion</th><th>Side</th>
+        <th>Direction</th><th class="num">Worst</th><th class="num">Best</th>
+        <th class="num" id="mhA">x(A)</th><th class="num" id="mhB">x(B)</th><th class="num" id="mhC">x(C)</th>
+        <th class="num">Swing pts</th><th class="num">ω</th>
+        <th class="num" id="mhvA">v(A)</th><th class="num" id="mhvB">v(B)</th><th class="num" id="mhvC">v(C)</th>
+        <th class="num" id="mhContrib">ω·Δ</th>
+      </tr></thead>
+      <tbody id="mBody"></tbody>
+      <tfoot id="mFoot"></tfoot>
+    </table></div>
+    <div id="mScores" class="stats"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">One-way sensitivity — where the conclusion reverses</h3>
+    <p class="small muted" style="max-width:78ch">For each criterion in turn, the raw swing points at
+      which the displayed pairwise difference passes through zero, all other criteria held at their
+      base-case points. "No attainable weight" is a result and is recorded as one. This, and not the
+      base case, is the part of a quantitative analysis that earns its place.</p>
+    <div class="tablewrap"><table id="mSens">
+      <thead><tr><th>Criterion</th><th class="num">Base-case swing points</th>
+        <th class="num" id="msH">Reverses at</th><th>Reading</th></tr></thead>
+      <tbody id="mSensBody"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ---------- 5. BRAT ---------- -->
+<section class="panel" id="p-brat" role="tabpanel">
+  <h2>BRAT worksheet</h2>
+  <p class="lede">Benefits and risks kept deliberately separate rather than combined into a score
+    (Chapter 11). The value tree fixes the criterion set; the Key Benefit-Risk Summary table puts
+    every retained criterion on a stated denominator; the forest plot displays them in one panel with
+    a vertical line at zero. Nothing here supplies an exchange rate, and that is the point.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Step 2 · Value tree</h3>
+    <div class="field"><label for="btRoot">Root — the decision, written out in full: product, dose, population, comparator, horizon</label>
+      <textarea id="btRoot" rows="2"></textarea></div>
+    <div class="grid g2">
+      <div>
+        <h4 style="margin-top:.4em"><span class="pill ben">Favourable effects</span></h4>
+        <div id="btFav"></div>
+        <button class="tiny" id="btAddFav">Add leaf</button>
+      </div>
+      <div>
+        <h4 style="margin-top:.4em"><span class="pill risk">Unfavourable effects</span></h4>
+        <div id="btUnfav"></div>
+        <button class="tiny" id="btAddUnfav">Add leaf</button>
+      </div>
+    </div>
+    <div class="field" style="margin-top:1em"><label for="btExcl">Excluded, with reasons and retained estimates</label>
+      <textarea id="btExcl" rows="2"></textarea></div>
+    <div class="note">Leaves are measurable attributes: a scale, a direction, a unit and a source.
+      Siblings must not overlap, and nested thresholds on one construct — ACR20, ACR50, ACR70; "all"
+      and "serious" events of the same reaction — are one leaf, not several.</div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Step 6 · Key Benefit-Risk Summary table</h3>
+    <div class="toolbar">
+      <button id="brAdd">Add criterion</button>
+      <button id="brLoad">Load the Therapex example</button>
+      <button id="brClear">Clear</button>
+      <span style="margin-left:auto"></span>
+      <label style="text-transform:none;letter-spacing:0;font-size:.8rem;margin:0">Forest plot axis
+        <select id="brScale" style="width:auto;display:inline-block;margin-left:.4em">
+          <option value="linear" selected>Linear</option>
+          <option value="symlog">Symmetric log</option>
+        </select></label>
+    </div>
+    <div class="tablewrap"><table id="brTable">
+      <thead><tr>
+        <th class="ctl" style="width:52px">Order</th><th style="min-width:170px">Criterion</th><th>Side</th>
+        <th>Basis</th><th class="num">Events, product</th><th class="num">Denominator, product</th>
+        <th class="num">Events, comparator</th><th class="num">Denominator, comparator</th>
+        <th class="num">Rank</th><th style="min-width:160px">Estimate (95% CI)</th><th>Denominator</th>
+      </tr></thead>
+      <tbody id="brBody"></tbody>
+    </table></div>
+    <div id="brPlot" style="margin-top:1.2em"></div>
+    <div class="note">The denominator column is what stops a reader subtracting a proportion over a
+      fixed treatment period from an annualised event rate. Rows measured per 1,000 patients treated
+      and rows measured per 1,000 patient-years share a panel; they do not share a scale of meaning.</div>
+  </div>
+</section>
+
+<!-- ---------- 6. PrOACT-URL ---------- -->
+<section class="panel" id="p-proact" role="tabpanel">
+  <h2>PrOACT-URL worksheet</h2>
+  <p class="lede">A structured qualitative assessment (Chapter 10). The framework's value is the order
+    of the questions. Fill it top to bottom, and do not let Alternatives be populated after
+    Consequences. EMA renders the same content as twelve operational steps by inserting
+    <em>Criteria</em> explicitly between Objectives and Alternatives.</p>
+  <div class="card">
+    <div id="prMeter"></div>
+    <div id="prList" style="margin-top:1em"></div>
+  </div>
+</section>
+
+<!-- ---------- 7. WORDING LIBRARY ---------- -->
+<section class="panel" id="p-wording" role="tabpanel">
+  <h2>Conclusion wording library</h2>
+  <p class="lede">Modular sentence patterns by conclusion type (Chapter 33, instrument 15). Four rules
+    apply to all of them: state the direction, the population, the conditions and what would change
+    the conclusion — all four, always. Read the finished sentence once with the population clause
+    covered by a hand; if it still reads as a complete claim about the product, rewrite it.</p>
+  <div class="toolbar" id="wFilter"></div>
+  <div id="wList"></div>
+</section>
+
+<!-- ---------- 8. REPORT ---------- -->
+<section class="panel" id="p-report" role="tabpanel">
+  <div class="warnband">
+    <b>Educational worksheet — not a regulatory document.</b> Not medical advice · not clinical
+    decision support · not a medical device · not validated submission software. Worked-example data
+    are fictional. The views expressed are the author's personal views only and do not represent any
+    current or former employer, client, institution, professional society or regulatory body. Verify
+    every regulatory requirement against current source documents.
+  </div>
+  <h2>Assessment summary</h2>
+  <div class="card no-print">
+    <h3 style="margin-top:0">Document header</h3>
+    <p class="small muted">Head every artefact. An undated benefit–risk table is not evidence of
+      anything, because nobody can tell which version of the evidence base it describes.</p>
+    <div class="grid g3">
+      <div class="field"><label for="dProduct">Product</label><input type="text" id="dProduct"></div>
+      <div class="field"><label for="dSubstance">Active substance</label><input type="text" id="dSubstance"></div>
+      <div class="field"><label for="dVersion">Version</label><input type="text" id="dVersion"></div>
+      <div class="field"><label for="dDate">Date</label><input type="date" id="dDate"></div>
+      <div class="field"><label for="dAuthor">Author</label><input type="text" id="dAuthor"></div>
+      <div class="field"><label for="dSupersedes">Supersedes</label><input type="text" id="dSupersedes"></div>
+      <div class="field"><label for="dPopulation">Population</label><input type="text" id="dPopulation"></div>
+      <div class="field"><label for="dComparator">Comparator</label><input type="text" id="dComparator"></div>
+      <div class="field"><label for="dHorizon">Time horizon</label><input type="text" id="dHorizon"></div>
+    </div>
+    <div class="field"><label for="dDecision">Decision this artefact supports</label>
+      <input type="text" id="dDecision"></div>
+    <div class="toolbar">
+      <button id="repBuild">Rebuild summary</button>
+      <button id="repPrint" class="primary">Print</button>
+    </div>
+  </div>
+  <div class="rep" id="repOut"></div>
+</section>
+
+</main>
+
+<div id="print-head">Educational worksheet · Benefit–Risk Workbench · companion to
+  <i>Practical Benefit–Risk Assessment in Pharmacovigilance</i> · Dr Hafez Selim · fictional example data</div>
+<div id="print-foot">Not medical advice · Not a medical device · Fictional example data · Personal views of the author only</div>
+
+<div id="terms-print">
+  <h2>Full terms of use — 15 clauses</h2>
+  <ol id="terms-print-list"></ol>
+  <p style="font-size:8pt;margin-top:1em">Corrections: abdu94@gmail.com</p>
+</div>
+
+</div><!-- /app -->
+
+<script>
+/* ==================================================================== *
+ * CALC-START — pure computation and canonical example data.            *
+ * This block touches no DOM and is verified against CANON.md.          *
+ * ==================================================================== */
+var Z95 = 1.959963984540054;            /* 97.5th percentile of the standard normal */
+var MINUS = '−', INF = '∞';
+
+/* ---- rounding and formatting ---- */
+function rnd(x, d){
+  if (x === null || x === undefined || !isFinite(x)) return x;
+  var f = Math.pow(10, d || 0), s = x < 0 ? -1 : 1;
+  return s * Math.round(Math.abs(x) * f) / f;
+}
+function fx(x, d){                       /* fixed decimals, typographic minus, infinity glyph */
+  if (x === null || x === undefined || (typeof x === 'number' && isNaN(x))) return '—';
+  if (!isFinite(x)) return (x < 0 ? MINUS : '') + INF;
+  d = d || 0;
+  var v = rnd(x, d), s = Math.abs(v).toFixed(d);
+  return (v < 0 && parseFloat(s) !== 0 ? MINUS : '') + s;
+}
+function ci(lo, hi, d){ return '(' + fx(lo, d) + ' to ' + fx(hi, d) + ')'; }
+function fxs(x, d){ return (x > 0 ? '+' : '') + fx(x, d); }   /* signed, for differences */
+/* Normalised weights are carried at four decimals and displayed at three, so that a
+   column of weights reads as the model holds it rather than as the display rounds it. */
+function fmtWeight(w){ return rnd(w, 4).toFixed(3); }
+
+/* ==================== 1. NNT / NNH — proportions ==================== *
+ * Risk difference with a Wald 95% interval; risk ratio; NNT as the
+ * reciprocal, with Altman's interval rules (BMJ 1998;317:1309-12).
+ * ==================================================================== */
+function binaryEffect(eT, nT, eC, nC, favourable){
+  var pT = eT / nT, pC = eC / nC, rd = pT - pC;
+  var se = Math.sqrt(pT * (1 - pT) / nT + pC * (1 - pC) / nC);
+  var lo = rd - Z95 * se, hi = rd + Z95 * se;
+  var s  = favourable ? 1 : -1;                 /* orient so positive = better with the product */
+  var d  = s * rd, dlo = (s > 0 ? lo : -hi), dhi = (s > 0 ? hi : -lo);
+  var o = { pT:pT, pC:pC, rd:rd, se:se, lo:lo, hi:hi, rr:(pC > 0 ? pT / pC : NaN),
+            d:d, dlo:dlo, dhi:dhi, favourable:!!favourable };
+  o.spans = (dlo <= 0 && dhi >= 0);
+  o.nnt   = (d !== 0) ? 1 / Math.abs(d) : Infinity;
+  o.kind  = (d > 0) ? 'NNTB' : ((d < 0) ? 'NNTH' : null);
+  if (o.spans){
+    o.harmLim = (dlo !== 0) ? 1 / Math.abs(dlo) : Infinity;   /* excluded region, harm edge   */
+    o.benLim  = (dhi !== 0) ? 1 / Math.abs(dhi) : Infinity;   /* excluded region, benefit edge */
+  } else {
+    var a = Math.abs(dlo), b = Math.abs(dhi);
+    o.ciLo = 1 / Math.max(a, b); o.ciHi = 1 / Math.min(a, b); /* reciprocal reverses the order */
+  }
+  return o;
+}
+/* Altman's notation. The direction is carried by the label, never by a minus sign. */
+function nntText(o){
+  if (!isFinite(o.nnt))
+    return 'Risk difference exactly zero — the NNT is infinite. Report the risk difference and '
+         + 'its interval; do not report an NNT.';
+  if (o.spans)
+    return o.kind + ' ' + fx(o.nnt,1) + ' (NNTH ' + fx(o.harmLim,1) + ' to ' + INF
+         + ' to NNTB ' + fx(o.benLim,1) + ')';
+  return o.kind + ' ' + fx(o.nnt,1) + ' (' + fx(o.ciLo,1) + ' to ' + fx(o.ciHi,1) + ')';
+}
+
+/* ==================== 2. NNT / NNH — incidence rates ==================== */
+function rateEffect(dT, pyT, dC, pyC, favourable, per){
+  per = per || 100;
+  var irT = per * dT / pyT, irC = per * dC / pyC, ird = irT - irC;
+  var se  = per * Math.sqrt(dT / (pyT * pyT) + dC / (pyC * pyC));
+  var lo  = ird - Z95 * se, hi = ird + Z95 * se;
+  var rr  = irT / irC, seLog = Math.sqrt(1 / dT + 1 / dC);
+  var s   = favourable ? 1 : -1, d = s * ird;
+  return {
+    per:per, irT:irT, irC:irC, ird:ird, se:se, lo:lo, hi:hi,
+    rr:rr, rrLo:rr * Math.exp(-Z95 * seLog), rrHi:rr * Math.exp(Z95 * seLog),
+    excess:1000 * ird / per,                       /* excess events per 1,000 patient-years */
+    excessLo:1000 * lo / per, excessHi:1000 * hi / per,
+    nn:(ird !== 0) ? per / Math.abs(ird) : Infinity,   /* patients treated for one year */
+    kind:(d > 0) ? 'NNTB' : ((d < 0) ? 'NNTH' : null),
+    spansNull:(lo <= 0 && hi >= 0)
+  };
+}
+
+/* ==================== 3. MCDA ==================== */
+function partialValue(x, worst, best, dir){
+  var v = (x - worst) / (best - worst);
+  return 100 * (dir === 'up' ? v : 1 - v);
+}
+function mcdaCompute(crit){
+  var tot = 0, i;
+  for (i = 0; i < crit.length; i++) tot += (+crit[i].swing || 0);
+  var rows = [], scores = { A:0, B:0, C:0 };
+  for (i = 0; i < crit.length; i++){
+    var c = crit[i], w = tot > 0 ? (+c.swing || 0) / tot : 0;
+    var v = { A:partialValue(+c.a, +c.worst, +c.best, c.dir),
+              B:partialValue(+c.b, +c.worst, +c.best, c.dir),
+              C:partialValue(+c.c, +c.worst, +c.best, c.dir) };
+    scores.A += w * v.A; scores.B += w * v.B; scores.C += w * v.C;
+    rows.push({ criterion:c.name, side:c.side, weight:w, v:v });
+  }
+  return { rows:rows, scores:scores, totalSwing:tot };
+}
+/* Decomposed difference: each term is one criterion's signed contribution in value points. */
+function mcdaDiff(model, a, b){
+  var rows = [], benefit = 0, risk = 0, total = 0, i;
+  for (i = 0; i < model.rows.length; i++){
+    var r = model.rows[i], contrib = r.weight * (r.v[a] - r.v[b]);
+    var shown = rnd(contrib, 2);
+    if (r.side === 'benefit') benefit += shown; else risk += shown;
+    total += contrib;
+    rows.push({ criterion:r.criterion, side:r.side, contrib:contrib });
+  }
+  return { rows:rows, benefit:rnd(benefit,1), risk:rnd(risk,1),
+           total:model.scores[a] - model.scores[b], totalRows:total };
+}
+/* One-way sensitivity: raw swing points at which the pairwise difference passes zero. */
+function tippingPoint(crit, idx, a, b){
+  var other = 0, i;
+  for (i = 0; i < crit.length; i++){
+    if (i === idx) continue;
+    var c = crit[i];
+    var va = partialValue(+c[a.toLowerCase()], +c.worst, +c.best, c.dir);
+    var vb = partialValue(+c[b.toLowerCase()], +c.worst, +c.best, c.dir);
+    other += (+c.swing || 0) * (va - vb);
+  }
+  var k = crit[idx];
+  var delta = partialValue(+k[a.toLowerCase()], +k.worst, +k.best, k.dir)
+            - partialValue(+k[b.toLowerCase()], +k.worst, +k.best, k.dir);
+  if (delta === 0) return null;
+  var w = -other / delta;
+  return (w >= 0) ? w : null;                    /* negative points are not attainable */
+}
+
+/* ==================== 4. BRAT summary row ==================== */
+/* Proportions are displayed per 1,000 patients treated over the stated horizon;
+   rates are displayed per 1,000 patient-years. The two never share a denominator. */
+function bratRow(r){
+  var favourable = (r.side === 'benefit');
+  if (r.basis === 'rate'){
+    var o = rateEffect(+r.eP, +r.nP, +r.eC, +r.nC, favourable);
+    return { est:o.excess, lo:o.excessLo, hi:o.excessHi, dp:1,
+             denom:'per 1,000 patient-years', metric:'Excess events', raw:o };
+  }
+  var b = binaryEffect(+r.eP, +r.nP, +r.eC, +r.nC, favourable);
+  return { est:1000 * b.rd, lo:1000 * b.lo, hi:1000 * b.hi, dp:0,
+           denom:'per 1,000 patients treated', metric:'Additional responders', raw:b };
+}
+
+/* ==================================================================== *
+ * CANONICAL WORKED EXAMPLES — Therapex (therapexib, TPX-441).          *
+ * Every figure is fictional and is quoted from the book's CANON file.  *
+ * ==================================================================== */
+var EX_BINARY = [
+ {label:'ACR20 response at 24 weeks',        dir:'fav', h:'24 weeks', t:'Therapex', c:'Comparator biologic',
+  eT:279, nT:450, eC:261, nC:450,
+  canon:'CANON §3 — risk difference 4.0 (' + MINUS + '2.4 to 10.4) pp; NNTB 25.0 (NNTH 41.7 to ' + INF + ' to NNTB 9.6)'},
+ {label:'ACR50 response at 24 weeks',        dir:'fav', h:'24 weeks', t:'Therapex', c:'Comparator biologic',
+  eT:171, nT:450, eC:149, nC:450,
+  canon:'CANON §3 — risk difference 4.9 (' + MINUS + '1.4 to 11.1) pp; NNTB 20.5 (NNTH 73.7 to ' + INF + ' to NNTB 9.0)'},
+ {label:'HAQ-DI improvement ≥0.22 at 24 weeks', dir:'fav', h:'24 weeks', t:'Therapex', c:'Comparator biologic',
+  eT:306, nT:450, eC:279, nC:450,
+  canon:'CANON §3 — risk difference 6.0 (' + MINUS + '0.2 to 12.2) pp; NNTB 16.7 (NNTH 454.7 to ' + INF + ' to NNTB 8.2)'},
+ {label:'Radiographic non-progression, week 52', dir:'fav', h:'52 weeks', t:'Therapex', c:'Comparator biologic',
+  eT:369, nT:450, eC:288, nC:450,
+  canon:'CANON §3 — risk difference 18.0 (12.3 to 23.7) pp; NNTB 5.6 (4.2 to 8.1)'},
+ {label:'ACR20 response at 24 weeks',        dir:'fav', h:'24 weeks', t:'Therapex', c:'Placebo',
+  eT:279, nT:450, eC:61, nC:226,
+  canon:'CANON §2 — risk difference 35.0 (27.7 to 42.3) pp; NNTB 2.9 (2.4 to 3.6)'},
+ {label:'ACR50 response at 24 weeks',        dir:'fav', h:'24 weeks', t:'Therapex', c:'Placebo',
+  eT:171, nT:450, eC:27, nC:226,
+  canon:'CANON §2 — risk difference 26.1 (19.9 to 32.2) pp; NNTB 3.8 (3.1 to 5.0)'},
+ {label:'ACR70 response at 24 weeks',        dir:'fav', h:'24 weeks', t:'Therapex', c:'Placebo',
+  eT:90, nT:450, eC:11, nC:226,
+  canon:'CANON §2 — risk difference 15.1 (10.5 to 19.8) pp; NNTB 6.6 (5.1 to 9.5)'},
+ {label:'DAS28-CRP remission at 24 weeks',   dir:'fav', h:'24 weeks', t:'Therapex', c:'Placebo',
+  eT:108, nT:450, eC:14, nC:226,
+  canon:'CANON §2 — risk difference 17.8 (12.8 to 22.8) pp; NNTB 5.6 (4.4 to 7.8)'},
+ {label:'HAQ-DI improvement ≥0.22 at 24 weeks', dir:'fav', h:'24 weeks', t:'Therapex', c:'Placebo',
+  eT:306, nT:450, eC:90, nC:226,
+  canon:'CANON §2 — risk difference 28.2 (20.5 to 35.9) pp; NNTB 3.5 (2.8 to 4.9)'},
+ {label:'Radiographic non-progression, week 52', dir:'fav', h:'52 weeks', t:'Therapex', c:'Placebo',
+  eT:369, nT:450, eC:115, nC:226,
+  canon:'CANON §2 — risk difference 31.1 (23.7 to 38.5) pp; NNTB 3.2 (2.6 to 4.2)'}
+];
+
+var EX_RATE = [
+ {label:'Serious infection',            eT:467, pT:14600, eC:236, pC:9850,
+  canon:'CANON §4 — 3.2 vs 2.4 per 100 PY; rate difference 0.8 (0.38 to 1.22); rate ratio 1.34 (1.14 to 1.56); excess 8.0 per 1,000 PY; NNH 125 per year'},
+ {label:'Herpes zoster (all)',          eT:569, pT:14600, eC:108, pC:9850,
+  canon:'CANON §4 — 3.9 vs 1.1; rate difference 2.8 (2.42 to 3.18); rate ratio 3.55 (2.89 to 4.37); excess 28.0 per 1,000 PY; NNH 36 per year'},
+ {label:'Herpes zoster (serious)',      eT:58,  pT:14600, eC:12,  pC:9850,
+  canon:'CANON §4 — 0.4 vs 0.12; rate difference 0.28 (0.15 to 0.4); rate ratio 3.26 (1.75 to 6.07); excess 2.8 per 1,000 PY; NNH 363 per year'},
+ {label:'Venous thromboembolism',       eT:61,  pT:14600, eC:18,  pC:9850,
+  canon:'CANON §4 — 0.42 vs 0.18; rate difference 0.24 (0.1 to 0.37); rate ratio 2.29 (1.35 to 3.87); excess 2.4 per 1,000 PY; NNH 425 per year'},
+ {label:'Major adverse cardiac event',  eT:124, pT:14600, eC:61,  pC:9850,
+  canon:'CANON §4 — 0.85 vs 0.62; rate difference 0.23 (0.01 to 0.45); rate ratio 1.37 (1.01 to 1.86); excess 2.3 per 1,000 PY; NNH 435 per year'},
+ {label:'Malignancy excluding NMSC',    eT:139, pT:14600, eC:71,  pC:9850,
+  canon:'CANON §4 — 0.95 vs 0.72; rate difference 0.23 (0.0 to 0.46); rate ratio 1.32 (0.99 to 1.76); excess 2.3 per 1,000 PY; NNH 432 per year'},
+ {label:'Non-melanoma skin cancer',     eT:88,  pT:14600, eC:39,  pC:9850,
+  canon:'CANON §4 — 0.6 vs 0.4; rate difference 0.21 (0.03 to 0.38); rate ratio 1.52 (1.04 to 2.22); excess 2.1 per 1,000 PY; NNH 484 per year'},
+ {label:'Serious hepatic event',        eT:23,  pT:14600, eC:13,  pC:9850,
+  canon:'CANON §4 — 0.16 vs 0.13; rate difference 0.03 (' + MINUS + '0.07 to 0.12); rate ratio 1.19 (0.6 to 2.36); excess 0.3 per 1,000 PY; NNH 3913 per year'},
+ {label:'Gastrointestinal perforation', eT:9,   pT:14600, eC:3,   pC:9850,
+  canon:'CANON §4 — 0.06 vs 0.03; rate difference 0.03 (' + MINUS + '0.02 to 0.08); rate ratio 2.02 (0.55 to 7.48); excess 0.3 per 1,000 PY; NNH 3206 per year'},
+ {label:'All-cause mortality',          eT:47,  pT:14600, eC:28,  pC:9850,
+  canon:'CANON §4 — 0.32 vs 0.28; rate difference 0.04 (' + MINUS + '0.1 to 0.18); rate ratio 1.13 (0.71 to 1.81); excess 0.4 per 1,000 PY; NNH 2656 per year'}
+];
+
+/* MCDA base case — Chapter 14. Ranges are the assessment team's plausible bounds,
+   not the observed data range. Favourable effects in %, unfavourable in events per 1,000 PY. */
+var EX_MCDA = {
+  alts:['Therapex + cDMARD', 'Comparator biologic + cDMARD', 'cDMARD alone'],
+  criteria:[
+   {name:'ACR50 response at 24 weeks',          side:'benefit', dir:'up',   worst:0, best:60,  a:38.0, b:33.1, c:11.9, swing:100},
+   {name:'HAQ-DI responder at 24 weeks',        side:'benefit', dir:'up',   worst:0, best:100, a:68.0, b:62.0, c:39.8, swing:70},
+   {name:'Radiographic non-progression, wk 52', side:'benefit', dir:'up',   worst:0, best:100, a:82.0, b:64.0, c:51.0, swing:50},
+   {name:'Serious infection',                   side:'risk',    dir:'down', worst:0, best:60,  a:32.0, b:24.0, c:18.0, swing:65},
+   {name:'Herpes zoster (all)',                 side:'risk',    dir:'down', worst:0, best:60,  a:39.0, b:11.0, c:4.0,  swing:20},
+   {name:'Venous thromboembolism',              side:'risk',    dir:'down', worst:0, best:10,  a:4.2,  b:1.8,  c:1.5,  swing:55},
+   {name:'Major adverse cardiac event',         side:'risk',    dir:'down', worst:0, best:20,  a:8.5,  b:6.2,  c:5.0,  swing:60},
+   {name:'Malignancy excluding NMSC',           side:'risk',    dir:'down', worst:0, best:20,  a:9.5,  b:7.2,  c:6.0,  swing:45}
+  ]
+};
+/* High-risk subgroup re-run: ≥65 years with ≥1 cardiovascular risk factor. */
+var EX_MCDA_HR = {
+  alts:['Therapex + cDMARD (high risk)', 'Comparator biologic + cDMARD (high risk)', 'cDMARD alone (high risk)'],
+  criteria:[
+   {name:'ACR50 response at 24 weeks',          side:'benefit', dir:'up',   worst:0, best:60,  a:28.1, b:24.9, c:11.9, swing:100},
+   {name:'HAQ-DI responder at 24 weeks',        side:'benefit', dir:'up',   worst:0, best:100, a:61.0, b:57.0, c:39.8, swing:70},
+   {name:'Radiographic non-progression, wk 52', side:'benefit', dir:'up',   worst:0, best:100, a:78.0, b:61.0, c:51.0, swing:50},
+   {name:'Serious infection',                   side:'risk',    dir:'down', worst:0, best:60,  a:45.0, b:32.0, c:24.0, swing:65},
+   {name:'Herpes zoster (all)',                 side:'risk',    dir:'down', worst:0, best:60,  a:52.0, b:15.0, c:6.0,  swing:20},
+   {name:'Venous thromboembolism',              side:'risk',    dir:'down', worst:0, best:10,  a:8.2,  b:4.4,  c:2.0,  swing:55},
+   {name:'Major adverse cardiac event',         side:'risk',    dir:'down', worst:0, best:20,  a:16.4, b:10.9, c:9.0,  swing:60},
+   {name:'Malignancy excluding NMSC',           side:'risk',    dir:'down', worst:0, best:20,  a:13.0, b:9.6,  c:8.2,  swing:45}
+  ]
+};
+
+/* BRAT Key Benefit-Risk Summary — Therapex against the comparator biologic. */
+var EX_BRAT = [
+ {name:'All-cause mortality',                  side:'risk',    basis:'rate', eP:47,  nP:14600, eC:28,  nC:9850, rank:1},
+ {name:'Malignancy excluding NMSC',            side:'risk',    basis:'rate', eP:139, nP:14600, eC:71,  nC:9850, rank:2},
+ {name:'Major adverse cardiac event',          side:'risk',    basis:'rate', eP:124, nP:14600, eC:61,  nC:9850, rank:2},
+ {name:'Venous thromboembolism',               side:'risk',    basis:'rate', eP:61,  nP:14600, eC:18,  nC:9850, rank:2},
+ {name:'Radiographic non-progression, week 52',side:'benefit', basis:'prop', eP:369, nP:450,   eC:288, nC:450,  rank:3},
+ {name:'Serious infection',                    side:'risk',    basis:'rate', eP:467, nP:14600, eC:236, nC:9850, rank:4},
+ {name:'ACR50 response, 24 weeks',             side:'benefit', basis:'prop', eP:171, nP:450,   eC:149, nC:450,  rank:5},
+ {name:'HAQ-DI improvement ≥0.22, 24 weeks', side:'benefit', basis:'prop', eP:306, nP:450, eC:279, nC:450, rank:5},
+ {name:'Herpes zoster (all)',                  side:'risk',    basis:'rate', eP:569, nP:14600, eC:108, nC:9850, rank:6}
+];
+
+var EX_TREE = {
+  root:'Therapex (therapexib) 10 mg twice daily added to conventional synthetic DMARD therapy, '
+     + 'against a comparator biologic added to cDMARD and against no additional therapy, in adults '
+     + 'with moderate-to-severe active rheumatoid arthritis and an inadequate response to cDMARDs; '
+     + 'favourable effects at 24 weeks (52 for structural damage), unfavourable effects over the '
+     + 'all-exposure pool.',
+  fav:[
+   {name:'ACR50 response at 24 weeks', unit:'% of patients, higher is better', src:'THX-301, week 24'},
+   {name:'HAQ-DI responder (improvement ≥0.22) at 24 weeks', unit:'% of patients, higher is better', src:'THX-301, week 24'},
+   {name:'Radiographic non-progression at week 52', unit:'% of patients, higher is better', src:'THX-301, week 52'}
+  ],
+  unfav:[
+   {name:'Serious infection', unit:'events per 100 patient-years, lower is better', src:'Integrated pool'},
+   {name:'Herpes zoster (all events)', unit:'events per 100 patient-years, lower is better', src:'Integrated pool'},
+   {name:'Venous thromboembolism', unit:'events per 100 patient-years, lower is better', src:'Integrated pool; THX-PASS-01'},
+   {name:'Major adverse cardiac event', unit:'events per 100 patient-years, lower is better', src:'Integrated pool; THX-PASS-01'},
+   {name:'Malignancy excluding NMSC', unit:'events per 100 patient-years, lower is better', src:'Integrated pool'}
+  ],
+  excl:'ACR20 and ACR70 — nested within the ACR50 construct; retained as uncertainty text on '
+     + 'that leaf (ACR20 62.0 vs 58.0; ACR70 20.0 vs not estimated). Serious herpes zoster — a '
+     + 'subset of herpes zoster (all), 0.4 vs 0.12 per 100 PY; not additive with its parent. '
+     + 'Non-melanoma skin cancer, serious hepatic event and gastrointestinal perforation — '
+     + 'retained in the master data summary, not decision drivers at this cycle.'
+};
+
+var EX_EFFECTS = [
+ {s:'fav', e:'Radiographic non-progression',
+  d:'Patients with no radiographic progression of structural joint damage at week 52',
+  u:'% of patients', c:'64.0', p:'82.0; difference +18.0 pp (12.3 to 23.7)',
+  x:'The only favourable effect whose interval excludes zero against the comparator, and randomised, '
+   + 'so unbiased by indication. But it is a structural surrogate: its value rests on a link to future '
+   + 'function that 52 weeks cannot demonstrate, and the longer horizon means more withdrawal than the '
+   + '24-week endpoints, so the imputation rule must be stated or the row is uninterpretable. Against '
+   + 'no added therapy: 82.0 vs 50.9, difference 31.1 pp (23.7 to 38.5).',
+  r:'THX-301, week 52'},
+ {s:'fav', e:'HAQ-DI responder',
+  d:'Patients achieving improvement ≥0.22 in Health Assessment Questionnaire Disability Index',
+  u:'% of patients', c:'62.0', p:'68.0; difference +6.0 pp (' + MINUS + '0.2 to 12.2)',
+  x:'Interval touches zero; superiority to the comparator is not established. The responder threshold '
+   + 'of 0.22 is a convention, and a different threshold moves the estimate. Substantially correlated '
+   + 'with ACR50 — largely the same patients respond on both — so the two rows are not '
+   + 'independent evidence and must never be added. Against no added therapy: 68.0 vs 39.8, difference '
+   + '28.2 pp (20.5 to 35.9).',
+  r:'THX-301, week 24'},
+ {s:'fav', e:'ACR50 response',
+  d:'Patients achieving 50% improvement by American College of Rheumatology criteria',
+  u:'% of patients', c:'33.1', p:'38.0; difference +4.9 pp (' + MINUS + '1.4 to 11.1)',
+  x:'Interval includes zero, and the trial was not powered for superiority to an active comparator; '
+   + 'this is a non-inferiority-shaped result being read as a benefit. ACR20 (62.0 vs 58.0, difference '
+   + '4.0 pp) and ACR70 are nested in the same construct and are not tabulated separately. Against no '
+   + 'added therapy: 38.0 vs 11.9, difference 26.1 pp (19.9 to 32.2) — the benefit against no '
+   + 'added therapy is not in doubt.',
+  r:'THX-301, week 24'},
+ {s:'unfav', e:'Herpes zoster, all',
+  d:'All herpes zoster events, any seriousness', u:'Events per 100 patient-years',
+  c:'1.1', p:'3.9; difference +2.8 (2.42 to 3.18); excess 28.0 per 1,000 PY',
+  x:'Largest absolute excess in the table and the least severe event type in it — a row that '
+   + 'dominates any display scaled to counts and recedes in any display scaled to seriousness. Rate '
+   + 'ratio 3.55 (2.89 to 4.37); the association is not in question. Contains the serious subset '
+   + 'tabulated below: the two rows must not be summed. Ascertainment is clinical and unlikely to stay '
+   + 'symmetrical once prescribers expect the event.',
+  r:'Integrated pool'},
+ {s:'unfav', e:'Serious infection',
+  d:'Infection meeting a seriousness criterion', u:'Events per 100 patient-years',
+  c:'2.4', p:'3.2; difference +0.8 (0.38 to 1.22); excess 8.0 per 1,000 PY',
+  x:'Rate ratio 1.34 (1.14 to 1.56). Mechanistically expected for the class and consistent across the '
+   + 'pivotal studies, which is the strongest evidential position any row here occupies. Known from '
+   + 'the post-authorisation study to vary substantially by age and comorbidity, so the pooled figure '
+   + 'describes no actual patient.',
+  r:'Integrated pool'},
+ {s:'unfav', e:'Herpes zoster, serious',
+  d:'Herpes zoster meeting a seriousness criterion', u:'Events per 100 patient-years',
+  c:'0.12', p:'0.4; difference +0.28 (0.15 to 0.4); excess 2.8 per 1,000 PY',
+  x:'A subset of the row above; not additive with it. Rate ratio 3.26 (1.75 to 6.07) — the '
+   + 'interval is wide because the event count is small. The main threat to this row is not sampling '
+   + 'error but the consistency with which investigators applied the seriousness criteria across three '
+   + 'studies.',
+  r:'Integrated pool'},
+ {s:'unfav', e:'Venous thromboembolism',
+  d:'Deep vein thrombosis or pulmonary embolism', u:'Events per 100 patient-years',
+  c:'0.18', p:'0.42; difference +0.24 (0.1 to 0.37); excess 2.4 per 1,000 PY',
+  x:'The driver of this reassessment. Rate ratio 2.29 (1.35 to 3.87): the interval excludes unity but '
+   + 'its upper bound is nearly three times its lower, so the magnitude is poorly determined even '
+   + 'though the direction is not. THX-PASS-01 reports the excess concentrated in patients aged 65 or '
+   + 'over with at least one cardiovascular risk factor, which means this pooled row misstates the risk '
+   + 'for both strata.',
+  r:'Integrated pool; THX-PASS-01'},
+ {s:'unfav', e:'Major adverse cardiac event',
+  d:'Composite of cardiovascular death, myocardial infarction and stroke', u:'Events per 100 patient-years',
+  c:'0.62', p:'0.85; difference +0.23 (0.01 to 0.45); excess 2.3 per 1,000 PY',
+  x:'Positive by the narrowest available margin: rate ratio 1.37 (1.01 to 1.86), lower bound of the '
+   + 'rate difference 0.01 per 100 patient-years. A modest change in adjudication or follow-up would '
+   + 'move it across zero, so it should not be described as established. Concentrated in the same '
+   + 'stratum as thromboembolism.',
+  r:'Integrated pool; THX-PASS-01'},
+ {s:'unfav', e:'Malignancy excluding NMSC',
+  d:'Malignant neoplasm other than non-melanoma skin cancer', u:'Events per 100 patient-years',
+  c:'0.72', p:'0.95; difference +0.23 (0.0 to 0.46); excess 2.3 per 1,000 PY',
+  x:'The least established harm here: rate ratio 1.32 (0.99 to 1.76), difference interval reaching '
+   + 'exactly zero. Latency is the governing problem — 14,600 patient-years cannot exclude an '
+   + 'effect with a long induction period, so the near-null is weak evidence of absence rather than '
+   + 'evidence of safety. Carried as an important potential risk for what longer follow-up may show.',
+  r:'Integrated pool'},
+ {s:'unfav', e:'All-cause mortality',
+  d:'Death from any cause', u:'Events per 100 patient-years',
+  c:'0.28', p:'0.32; difference +0.04 (' + MINUS + '0.1 to 0.18); excess 0.4 per 1,000 PY',
+  x:'No detected difference; rate ratio 1.13 (0.71 to 1.81). The interval is compatible with a '
+   + 'meaningful excess and with a deficit, so this row establishes the absence of a large mortality '
+   + 'effect and nothing more. It is tabulated because its omission would be read as concealment.',
+  r:'Integrated pool'}
+];
+
+/* Exposed for the arithmetic check harness; harmless in the browser. */
+if (typeof module !== 'undefined' && module.exports){
+  module.exports = { Z95:Z95, rnd:rnd, fx:fx, binaryEffect:binaryEffect, nntText:nntText,
+    rateEffect:rateEffect, partialValue:partialValue, mcdaCompute:mcdaCompute, mcdaDiff:mcdaDiff,
+    tippingPoint:tippingPoint, bratRow:bratRow, fmtWeight:fmtWeight, EX_BINARY:EX_BINARY, EX_RATE:EX_RATE,
+    EX_MCDA:EX_MCDA, EX_MCDA_HR:EX_MCDA_HR, EX_BRAT:EX_BRAT };
+}
+/* ==================================================================== *
+ * CALC-END                                                             *
+ * ==================================================================== */
+</script>
+
+<script>
+/* ==================================================================== *
+ * UI — rendering, state and event wiring.                              *
+ * ==================================================================== */
+/* ---------------- small helpers ---------------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function stat(k, v, f, cls){
+  return '<div class="stat ' + (cls || '') + '" title="' + esc(f) + '"><div class="k">' + esc(k)
+       + '</div><div class="v' + (String(v).length > 22 ? ' small' : '') + '">' + esc(v)
+       + '</div><div class="f">' + esc(f) + '</div></div>';
+}
+function numOrNull(v){ var n = parseFloat(v); return isFinite(n) ? n : null; }
+
+/* ---------------- state ---------------- */
+var STATE = {
+  doc:{},
+  method:{ node:'q1', hist:[], trail:[], terminal:null, pre:null, gates:{} },
+  effects:{ rows:[] },
+  mcda:{ criteria:[], pair:'A|C' },
+  brat:{ fav:[], unfav:[], rows:[] },
+  proact:{},
+  wording:{}
+};
+
+/* ==================================================================== *
+ * 0. TERMS OF USE — 15 clauses, rendered into the gate and the print   *
+ * ==================================================================== */
+var TERMS = [
+ ["Educational purpose only",
+  "This workbench is an educational companion to the book Practical Benefit–Risk Assessment in "
++ "Pharmacovigilance: From Safety Signals to Regulatory Decisions. It exists to demonstrate the "
++ "instruments described there. It runs entirely in your browser; it transmits nothing, stores "
++ "nothing outside the current page, and requires no account. Closing or reloading the page "
++ "discards everything you have entered."],
+ ["No medical advice",
+  "Nothing produced by this tool constitutes medical, clinical, pharmaceutical, scientific, "
++ "regulatory or legal advice. No professional relationship of any kind is created by its use."],
+ ["Not clinical decision support",
+  "This tool must not be used to inform the diagnosis, treatment, prescribing, monitoring or "
++ "management of any individual patient, and must not be embedded in any system that does so."],
+ ["Not a medical device",
+  "No medical-device claim is made or implied. The tool is not CE or UKCA marked, is not cleared, "
++ "approved or registered by any regulatory authority, and has not been assessed against any "
++ "medical-device or clinical-software standard."],
+ ["Not validated regulatory submission software",
+  "The tool has not been validated for any regulated purpose and carries no qualification under "
++ "GxP, EU GMP Annex 11, US 21 CFR Part 11 or any equivalent framework. No output may be filed, "
++ "submitted or relied upon as computed here without independent verification in a validated "
++ "environment."],
+ ["Fictional worked-example data",
+  "Every worked example — Therapex, therapexib, TPX-441, the studies THX-301 to THX-303, "
++ "THX-PASS-01 and every companion case — is fictional and was generated for teaching. The "
++ "figures describe no real medicine, no real study and no real patient, and must never be quoted "
++ "as evidence about any actual product."],
+ ["Personal views of the author",
+  "The views, judgements and interpretations expressed in this tool and in the book it accompanies "
++ "are the author's personal views only. They do not represent, and must not be attributed to, any "
++ "current or former employer, client, institution, professional society or regulatory body, and "
++ "they carry no endorsement by any such organisation."],
+ ["No confidential or proprietary information",
+  "No confidential, proprietary, commercially sensitive or personal data belonging to any employer, "
++ "client, sponsor, authority or third party has been used in the preparation of this tool. Users "
++ "must not enter such data into it; anything entered remains the responsibility of the user."],
+ ["User responsibility to verify regulatory requirements",
+  "Regulatory requirements, guidance and legislation change, and differ by jurisdiction. The user "
++ "is solely responsible for verifying every requirement, method, threshold and wording against the "
++ "current source documents of the relevant authority before any use in practice."],
+ ["No reliance",
+  "The tool computes; it does not conclude. Every judgement it records remains the user's, and no "
++ "user should place reliance on any output as a substitute for the exercise of professional "
++ "judgement, independent analysis and appropriate review."],
+ ["Warranty disclaimer",
+  "The tool is provided “as is” and “as available”, without warranty of any "
++ "kind, express or implied, including but not limited to the implied warranties of merchantability, "
++ "fitness for a particular purpose, accuracy, completeness and non-infringement. No warranty is "
++ "given that the tool is free from error or that it will operate without interruption."],
+ ["Limitation of liability",
+  "To the maximum extent permitted by applicable law, neither the author nor the publisher shall be "
++ "liable for any direct, indirect, incidental, special, consequential, exemplary or punitive loss "
++ "or damage, nor for any loss of profit, data, goodwill or opportunity, arising out of or in "
++ "connection with the use of, or inability to use, this tool or its outputs."],
+ ["Third-party trademarks",
+  "Product names, agency names, framework names and marks referred to — including EMA, FDA, "
++ "ICH, CIOMS, ISPOR, PROTECT and BRAT — are the property of their respective owners and are "
++ "used nominatively for identification and educational reference only. No affiliation, sponsorship "
++ "or endorsement is claimed or implied."],
+ ["Copyright and permitted use",
+  "© 2026 Hafez Selim and Selim Medical Press. All rights reserved. This file may be used and "
++ "shared unmodified for personal study and non-commercial teaching with attribution. It may not be "
++ "modified, rebranded, incorporated into any commercial product or service, or distributed for a "
++ "fee without prior written permission."],
+ ["Corrections, contact and no duty to update",
+  "Errors, disputed figures and suggested corrections are welcome at abdu94@gmail.com and will be "
++ "considered for later editions. There is no obligation to correct, maintain, support or update "
++ "this tool, and no undertaking that any reported issue will be addressed."]
+];
+(function renderTerms(){
+  var h = '';
+  for (var i = 0; i < TERMS.length; i++)
+    h += '<li><b>' + esc(TERMS[i][0]) + '.</b> ' + esc(TERMS[i][1]) + '</li>';
+  $('terms-gate-list').innerHTML = h;
+  $('terms-print-list').innerHTML = h;
+})();
+
+/* ---------------- gate and shell ---------------- */
+$('ackbox').addEventListener('change', function(){ $('beginBtn').disabled = !this.checked; });
+$('beginBtn').addEventListener('click', function(){
+  $('gate').hidden = true; $('app').hidden = false; window.scrollTo(0, 0);
+});
+function activate(name){
+  var tabs = $('tabs').querySelectorAll('button'), i;
+  for (i = 0; i < tabs.length; i++)
+    tabs[i].setAttribute('aria-selected', tabs[i].getAttribute('data-panel') === name ? 'true' : 'false');
+  var panels = document.querySelectorAll('.panel');
+  for (i = 0; i < panels.length; i++)
+    panels[i].classList.toggle('active', panels[i].id === 'p-' + name);
+  if (name === 'report') buildReport();
+  window.scrollTo(0, 0);
+}
+$('tabs').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-panel]'); if (b) activate(b.getAttribute('data-panel'));
+});
+function printReport(){ activate('report'); buildReport(); setTimeout(function(){ window.print(); }, 60); }
+$('printBtn').addEventListener('click', printReport);
+$('repPrint').addEventListener('click', printReport);
+$('repBuild').addEventListener('click', buildReport);
+
+/* ==================================================================== *
+ * 1. METHOD SELECTOR — the decision tree of Chapter 18                 *
+ * ==================================================================== */
+var MS_Q = {
+ q1:{ n:'Node 1', q:'Is the decision contested?',
+   help:'Do competent people who have seen the same data disagree about which alternative is preferable?',
+   a:[{t:'No — one alternative is better on every criterion that differs, or the balance is plainly favourable or plainly unfavourable', go:'A'},
+      {t:'Yes, or the answer changes depending on who is asked', go:'q2'}]},
+ q2:{ n:'Node 2', q:'Has the problem been structured?',
+   help:'Are the alternatives named, the criteria fixed, and a value tree drawn?',
+   a:[{t:'No — the alternatives, criteria or value tree are not yet fixed', go:'q2a'},
+      {t:'Yes — alternatives named, criteria fixed, value tree drawn', go:'q3'}]},
+ q2a:{ n:'Node 2 (return)', q:'Which descriptive frame is run first?',
+   help:'Node 2 is a mandatory intermediate step, not an exit. Run the frame, then return to node 3.',
+   a:[{t:'PrOACT-URL — the question is what should be done, and the audience will read the argument as a chain of reasoning', go:'q3', pre:'PrOACT-URL (Chapter 10), run first'},
+      {t:'BRAT — the immediate task is to assemble and display comparative evidence on a common denominator without imposing an exchange rate', go:'q3', pre:'BRAT (Chapter 11), run first'},
+      {t:'Both — they are affordable, and they disagree rarely and instructively', go:'q3', pre:'PrOACT-URL and BRAT in parallel (Chapters 10 and 11), run first'}]},
+ q3:{ n:'Node 3', q:'How many criteria materially differentiate the alternatives?',
+   help:'Count only criteria on which the alternatives differ by an amount that could change the decision. Count the differences, not the list.',
+   a:[{t:'One benefit and one harm', go:'q4'},
+      {t:'Two to four', go:'q5'},
+      {t:'Five or more, or criteria in incommensurable units — percentage responders against events per 1,000 patient-years against months', go:'q6'}]},
+ q4:{ n:'Node 4', q:'Are the benefit and the harm of comparable seriousness and on the same time horizon?',
+   help:'A common mild benefit against a rare severe harm is not a comparison two reciprocals can carry.',
+   a:[{t:'Yes', go:'B'},
+      {t:'No — seriousness differs, or the horizons differ', go:'q7'}]},
+ q5:{ n:'Node 5', q:'Can the differentiating criteria be placed on one natural common scale?',
+   help:'A natural scale is one the criteria already share, not one manufactured by weighting.',
+   a:[{t:'Yes — and that scale is time, with a defined progression state', go:'C'},
+      {t:'Yes — and that scale is events in a common population', go:'D'},
+      {t:'No', go:'q6'}]},
+ q6:{ n:'Node 6', q:'Must an exchange rate be made explicit?',
+   help:'The test is mechanical: does one alternative win on the benefit criteria while another wins on the harm criteria?',
+   a:[{t:'No — one alternative is at least as good on every criterion and better on at least one', go:'E'},
+      {t:'Yes — the alternatives are preferred on opposite sides of the table', go:'q7'}]},
+ q7:{ n:'Node 7', q:'Whose values will supply the exchange rate, and can they be obtained in the time available?',
+   help:'This is the question the room usually skips, and it is the one that decides whether the analysis is auditable.',
+   a:[{t:'A named decision body’s values, elicitable in a facilitated swing-weighting session', go:'q8'},
+      {t:'Patients’ values — the operative question is how much risk patients will accept for a stated benefit', go:'F'},
+      {t:'No value set can be agreed, or the exercise must not be seen to impose one', go:'q9'}]},
+ q8:{ n:'Node 8', q:'What granularity of data is available?',
+   help:'Data granularity, not analytic ambition, decides whether uncertainty can be propagated.',
+   a:[{t:'Summary estimates, with standard errors', go:'G'},
+      {t:'Patient-level data, or full parameter distributions', go:'H'}]},
+ q9:{ n:'Node 9', q:'Will the audience read a probability rather than a score?',
+   help:'A committee can read one curve. Rank acceptability indices demand more.',
+   a:[{t:'Yes', go:'I'},
+      {t:'No', go:'J'}]},
+ gTime:{ n:'Node 10 — time gate', q:'How much time is available?',
+   help:'The gates override whatever terminal the tree returned.',
+   a:[{t:'Under two weeks', go:'gAud', gate:'time', val:'lt2w'},
+      {t:'Two weeks to three months', go:'gAud', gate:'time', val:'mid'},
+      {t:'More than three months', go:'gAud', gate:'time', val:'gt3m'}]},
+ gAud:{ n:'Node 11 — audience gate', q:'Who is the audience?',
+   help:'The audience can forbid a method outright.',
+   a:[{t:'Regulatory committee or assessor', go:'DONE', gate:'aud', val:'reg'},
+      {t:'Internal governance board', go:'DONE', gate:'aud', val:'internal'},
+      {t:'Public or patient audience', go:'DONE', gate:'aud', val:'public'}]}
+};
+var MS_GATE_TEXT = {
+ time:{
+  lt2w:'Under two weeks: collapse to Terminal A plus the absolute measures of Terminal B, and record '
+     + 'in the assessment which method you would have run and why you did not. An urgent procedure does '
+     + 'not permit weight elicitation, and pretending otherwise produces weights elicited from whoever '
+     + 'answered the telephone.',
+  mid:'Two weeks to three months: the deterministic terminals (A, B, D, E, G) are attainable; the '
+    + 'probabilistic ones (H, I, J) only if the model already exists.',
+  gt3m:'More than three months: any terminal is attainable, including primary preference elicitation.'},
+ aud:{
+  reg:'Regulatory committee or assessor: the descriptive frame and the effects table are obligatory '
+    + 'whatever else is run. Quantitative output is submitted alongside them and never instead of them.',
+  internal:'Internal governance board: the quantitative terminals carry their full weight, and this is '
+    + 'in fact where they are used — industry practice reports quantitative benefit–risk '
+    + 'assessment applied to two or three assets, primarily to support internal decision-making.',
+  public:'Public or patient audience: no weighted score, ever. Absolute frequencies on a common '
+     + 'denominator, natural frequencies rather than relative risks, and the output of Terminal B or D '
+     + 're-rendered for the audience.'}
+};
+var MS_TERM = {
+ A:{name:'Structured narrative and effects table', ch:'Chapter 9, scaffolded by PrOACT-URL (Chapter 10) or the FDA framework',
+   why:'The tree terminates here because an uncontested decision needs documentation, not computation. '
+     + 'Quantifying a conclusion nobody disputes adds cost and an attack surface, and spends credibility '
+     + 'you will need when a decision is genuinely disputed. Produce the effects table, write the '
+     + 'four-part conclusion — direction, population, conditions, what would change it — and stop. '
+     + 'This is not the weak option: a structured narrative with an effects table is the accepted currency '
+     + 'of regulatory benefit–risk assessment, and everything else is denominated in it.',
+   mx:['Low','A point estimate and a stated uncertainty for each key effect, with its source. No common scale needed','None explicit; importance is asserted in prose','No — uncertainty is described beside each effect, not carried into a result','A table of effects and a reasoned conclusion in words','High for the evidence; low for the weighing, which happens in a sentence that cannot be audited','Universal. This is the format regulators themselves use','Every assessment, as the foundation. Sufficient alone wherever no alternative is close']},
+ B:{name:'Absolute difference measures with NNTB and NNTH, plus a population-impact translation', ch:'Chapters 12 and 13',
+   why:'One benefit against one harm, of comparable seriousness and on the same time horizon, is the one '
+     + 'configuration in which reciprocals communicate honestly. Present the risk difference, the NNTB and '
+     + 'the NNTH side by side, each with its interval and its horizon, and translate both into expected '
+     + 'events in the treated population. Do not divide one by the other: nothing in either number supplies '
+     + 'the exchange rate between them, which is why this terminal is high as communication and low as '
+     + 'adjudication.',
+   mx:['Low','Two absolute risks per outcome, same horizon, ideally the same study; population size for the impact numbers','None — and the absence is the problem when an NNTB and an NNTH are set side by side','Per measure only, by Altman intervals, which may span infinity','Single reciprocal numbers and expected counts in a named population','Transparent arithmetic, deceptive comparability','High as communication, low as adjudication','Conveying the magnitude of one benefit or one harm to a non-technical audience']},
+ C:{name:'Q-TWiST or another time-partition method, with threshold utility analysis', ch:'Chapter 16',
+   why:'Where the differentiating criteria live on one natural scale — time — and a progression '
+     + 'state is defined, partitioning survival into toxicity time, time without symptoms or toxicity, and '
+     + 'relapse time puts benefit and harm in the same unit without an elicited weight. The threshold '
+     + 'utility analysis is mandatory rather than optional: bootstrap intervals cover sampling error in the '
+     + 'state times and say nothing about the utilities, which are the inputs most likely to be contested.',
+   mx:['Moderate to high','Patient-level survival and progression data, or published curves permitting restricted mean times, plus state utilities','Yes, as state utilities — and the threshold plot exists because they cannot be pinned down','Sampling uncertainty by bootstrap; value uncertainty displayed by threshold analysis, not propagated','Quality-adjusted time in months, a difference, a relative gain and a threshold utility table','High — the value dependence is displayed rather than buried','Established in oncology; unusable outside it','Survival settings with a well-defined progression state']},
+ D:{name:'BRAT-style forest display on a common denominator, plus incremental net benefit as a function of λ', ch:'Chapters 11 and 13',
+   why:'When the differentiating criteria are events in a common population, the honest display puts every '
+     + 'criterion on one denominator and leaves the trade to the reader. Reporting incremental net benefit '
+     + 'as a function of the exchange rate λ, rather than at one assumed λ, converts a concealed '
+     + 'value judgement into a visible one: the reader sees the exchange rate at which the sign changes and '
+     + 'can decide whether it is plausible.',
+   mx:['Moderate','Comparative effect estimates on a common population denominator, each with a documented source','No — but step 5 invites importance judgements with no elicitation method attached','Partly — intervals displayed per criterion, never combined','Key Benefit-Risk Summary Table with a forest plot of differences; INB plotted against λ','Very high for evidence and provenance; unaudited at step 5','High as a submission annex; industry-originated and widely recognised','Assembling and displaying comparative evidence where the aim is to inform the judgement, not to make it']},
+ E:{name:'Report the dominance and stop', ch:'Chapter 18, node 6',
+   why:'One alternative is at least as good on every criterion and better on at least one. Weighting a '
+     + 'dominated comparison adds nothing and obscures a clean result — and invites an argument about '
+     + 'weights that cannot change the answer. Record the dominance, record the criteria on which it holds, '
+     + 'and record what would have to change for it to fail.',
+   mx:['Low','Comparative estimates on every criterion, sufficient to establish dominance','None','Per criterion, displayed','A dominance statement with the criterion set it holds over','High','High — a clean result needs no method','Any decision in which one option is not beaten on any criterion that differentiates']},
+ F:{name:'Discrete choice experiment with maximum acceptable risk', ch:'Chapter 17',
+   why:'The operative question is not what the balance is but what risk the people who bear it will '
+     + 'accept for a stated benefit, and that is a quantity no dossier contains. Report the marginal rate '
+     + 'of substitution against the observed excess, and report it with latent-class or subgroup '
+     + 'heterogeneity — never as a population mean alone, since the mean conceals more than any other '
+     + 'single number in this field. A primary study is a project of months; where the timeline forbids it, '
+     + 'transferable published preference evidence from the same disease may be used, with the external '
+     + 'source stated in the conclusion.',
+   mx:['High — design, fieldwork, econometrics','A primary study: attributes, levels, an experimental design and several hundred respondents; or transferable published evidence','They are the output, not an input','Yes within the preference model; heterogeneity by mixed or latent-class logit','Marginal rates of substitution — a maximum acceptable risk per unit of benefit — plus preference class shares','High where design and model are reported; the mean conceals more than any other single number','An established route for devices, qualified in the EU, formalised in ICH E22','Deciding whether a risk is acceptable to the people who bear it, and identifying the subgroup for whom it is not']},
+ G:{name:'Deterministic MCDA with a difference display and one-way sensitivity analysis', ch:'Chapter 14',
+   why:'An exchange rate is unavoidable, a named body’s values can be elicited, and only summary '
+     + 'estimates are available. Build the linear-additive model, elicit swing weights against declared '
+     + 'ranges, and present the decomposed difference rather than the totals — a reader can check every '
+     + 'part of a decomposed difference and nothing at all in a pair of overall scores. Report the reversal '
+     + 'thresholds in the units in which the weights were elicited: the sensitivity output, not the base '
+     + 'case, is the part that earns its place, because it answers the regulator’s question rather than '
+     + 'attempting the regulator’s job.',
+   mx:['High — criterion set, value functions, elicited weights, sensitivity analysis','One performance value per alternative per criterion, plus a defensible scale range for each. Summary estimates suffice','Yes — explicit, elicited, and load-bearing','Only through one-way and probabilistic sensitivity analysis; the base case is deterministic','A value score per alternative and a difference display decomposing the gap','High in structure; contingent on disclosing the weights and whose they are','Case-by-case. Demonstrated at both major agencies, standing practice at neither','Contested decisions with many incommensurable criteria, where the exchange rate must be made explicit and stress-tested']},
+ H:{name:'Probabilistic MCDA — Monte Carlo propagation through the value model', ch:'Chapter 15',
+   why:'Patient-level data or full parameter distributions permit what the deterministic model cannot do: '
+     + 'a credible interval on the difference and the probability that one alternative exceeds another. Add '
+     + 'a tornado diagram to show which input carries the uncertainty. Correlation between endpoints must be '
+     + 'modelled rather than assumed away. This terminal is also where a deterministic result that sits '
+     + 'close to zero should return — a point estimate of a few value points cannot carry a decision.',
+   mx:['High; needs simulation and statistical support','Distributions rather than point estimates — standard errors at minimum, posteriors or patient-level data preferably — plus the correlation structure','Yes, but as distributions rather than fixed numbers','Yes, fully. This is the purpose of the method','A credible interval on the difference, the probability one option exceeds another, a tornado diagram','Moderate. Auditable only by someone who can read the code','Accepted as sensitivity analysis; rarely as the primary argument','Decisions where the point estimate sits close to the threshold and the honest answer is a probability']},
+ I:{name:'SMAA — stochastic multicriteria acceptability analysis', ch:'Chapter 15',
+   why:'No weight set can be agreed, and the audience will read a probability. Sampling the weight space '
+     + 'answers the question that remains: how large is the set of preferences favouring each option. Report '
+     + 'the central weight vector — that is where the values you declined to state reappear, and an '
+     + 'audience is entitled to see them. A SMAA analysis submitted without it should be sent back.',
+   mx:['Highest','Distributions, plus a defined weight space to sample over','No — the weight space is sampled rather than fixed, which is the method’s reason for existing','Yes, over effects and weights simultaneously','Rank acceptability indices, central weight vectors, confidence factors','Structurally transparent, interpretively demanding','Low as a primary argument; occasionally persuasive as a robustness demonstration','Decisions where no weight set can be agreed and the useful question is how large the set of preferences favouring each option is']},
+ J:{name:'Benefit–risk acceptability curve', ch:'Chapter 15',
+   why:'No weight set can be agreed and the audience will not read a rank acceptability index. Plot the '
+     + 'probability that the net benefit exceeds zero against the exchange rate λ, and mark the observed '
+     + 'excess on the axis. A committee can read one curve, and the curve makes the exchange rate the '
+     + 'explicit subject of the discussion rather than a hidden parameter of it.',
+   mx:['High','Distributions or standard errors for each effect','No — λ is varied rather than fixed','Yes, over effects at each λ','A curve: probability of positive net benefit against the exchange rate','High for the mechanism; the value judgement is the axis','Accepted as a sensitivity display','Marginal decisions where the exchange rate is the contested quantity']}
+};
+function msRender(){
+  var m = STATE.method, i;
+  var t = '';
+  for (i = 0; i < m.trail.length; i++)
+    t += '<div data-back="' + i + '" style="cursor:pointer" title="Click to return to this question">'
+       + esc(m.trail[i].q) + ' <b>' + esc(m.trail[i].a) + '</b></div>';
+  $('msTrail').innerHTML = t;
+  if (m.node === 'DONE'){ $('msQuestion').innerHTML = ''; msResult(); return; }
+  var q = MS_Q[m.node], h = '<div class="pill">' + esc(q.n) + '</div><div class="q">' + esc(q.q)
+        + '</div><div class="qhelp">' + esc(q.help) + '</div><div class="answers">';
+  for (i = 0; i < q.a.length; i++)
+    h += '<button data-ans="' + i + '">' + esc(q.a[i].t) + '</button>';
+  $('msQuestion').innerHTML = h + '</div>';
+  msResult();      /* the terminal appears as soon as it is reached; the gates then qualify it */
+}
+function msResult(){
+  var m = STATE.method, T = MS_TERM[m.terminal];
+  if (!T){ $('msResult').innerHTML = ''; return; }
+  var keys = ['Complexity','Data requirements','Weights required','Uncertainty propagated','Output type',
+              'Transparency','Regulatory usability','Decision situation suited'];
+  var h = '<div class="terminal"><div class="tl">Terminal ' + esc(m.terminal) + ' · recommended method</div>'
+        + '<h3>' + esc(T.name) + '</h3><div class="pill">' + esc(T.ch) + '</div>'
+        + '<p style="margin-top:.8em">' + esc(T.why) + '</p>';
+  if (m.pre) h += '<p><b>Run first:</b> ' + esc(m.pre) + '. Node 2 is a mandatory intermediate step, '
+                + 'not an exit — the descriptive frame scaffolds whatever quantitative work follows.</p>';
+  if (m.gates.time) h += '<p><b>Time gate.</b> ' + esc(MS_GATE_TEXT.time[m.gates.time]) + '</p>';
+  if (m.gates.aud)  h += '<p><b>Audience gate.</b> ' + esc(MS_GATE_TEXT.aud[m.gates.aud]) + '</p>';
+  h += '<div class="mrow">';
+  for (var i = 0; i < keys.length; i++)
+    h += '<div><k>' + esc(keys[i]) + '</k><span>' + esc(T.mx[i]) + '</span></div>';
+  h += '</div><p class="small" style="margin-top:.9em;margin-bottom:0">Record the choice, not just the '
+     + 'result: state the decision, the number of differentiating criteria, whether an exchange rate was '
+     + 'unavoidable, the data granularity available, the audience, and the method that follows — and '
+     + 'say in one clause which methods were considered and rejected.</p></div>';
+  $('msResult').innerHTML = h;
+}
+$('msQuestion').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-ans]'); if (!b) return;
+  var m = STATE.method, q = MS_Q[m.node], a = q.a[+b.getAttribute('data-ans')];
+  m.hist.push({ node:m.node, trail:m.trail.slice(), terminal:m.terminal, pre:m.pre,
+                gates:{ time:m.gates.time, aud:m.gates.aud } });
+  m.trail.push({ q:q.q, a:a.t });
+  if (a.pre) m.pre = a.pre;
+  if (a.gate) m.gates[a.gate] = a.val;
+  if (MS_TERM[a.go]){ m.terminal = a.go; m.node = 'gTime'; }
+  else m.node = a.go;
+  msRender();
+});
+$('msTrail').addEventListener('click', function(e){
+  var d = e.target.closest('[data-back]'); if (!d) return;
+  var i = +d.getAttribute('data-back'), s = STATE.method.hist[i];
+  STATE.method.hist = STATE.method.hist.slice(0, i);
+  STATE.method.node = s.node; STATE.method.trail = s.trail;
+  STATE.method.terminal = s.terminal; STATE.method.pre = s.pre;
+  STATE.method.gates = { time:s.gates.time, aud:s.gates.aud };
+  msRender();
+});
+$('msRestart').addEventListener('click', function(){
+  STATE.method = { node:'q1', hist:[], trail:[], terminal:null, pre:null, gates:{} }; msRender();
+});
+msRender();
+
+/* ==================================================================== *
+ * 2. NNT / NNH                                                         *
+ * ==================================================================== */
+(function fillExamples(){
+  var s = $('bEx'), i;
+  s.innerHTML = '<option value="">— select —</option>';
+  for (i = 0; i < EX_BINARY.length; i++)
+    s.innerHTML += '<option value="' + i + '">' + esc(EX_BINARY[i].label + ' — ' + EX_BINARY[i].t
+                 + ' vs ' + EX_BINARY[i].c) + '</option>';
+  var r = $('rEx');
+  r.innerHTML = '<option value="">— select —</option>';
+  for (i = 0; i < EX_RATE.length; i++)
+    r.innerHTML += '<option value="' + i + '">' + esc(EX_RATE[i].label) + '</option>';
+})();
+var canonB = null, canonR = null;
+function readBinary(){
+  var eT = numOrNull($('bET').value), nT = numOrNull($('bNT').value),
+      eC = numOrNull($('bEC').value), nC = numOrNull($('bNC').value);
+  var ok = eT !== null && nT !== null && eC !== null && nC !== null
+        && nT > 0 && nC > 0 && eT >= 0 && eC >= 0 && eT <= nT && eC <= nC;
+  return { ok:ok, eT:eT, nT:nT, eC:eC, nC:nC, label:$('bLabel').value, horizon:$('bHorizon').value,
+           nameT:$('bNameT').value, nameC:$('bNameC').value, fav:$('bDir').value === 'fav',
+           o:ok ? binaryEffect(eT, nT, eC, nC, $('bDir').value === 'fav') : null };
+}
+function renderBinary(){
+  var d = readBinary();
+  if (!d.ok){ $('bOut').innerHTML = '<div class="note">Enter events and n for both arms. Events may '
+    + 'not exceed n, and n must be greater than zero.</div>'; return; }
+  var o = d.o, rule;
+  if (!isFinite(o.nnt)) rule = 'Risk difference exactly zero: the NNT is infinite and none is reported.';
+  else if (o.spans) rule = 'The risk-difference interval contains zero, so the NNT scale contains '
+    + 'infinity in its middle. Altman’s notation states the two boundaries of the excluded region '
+    + 'and runs the interval through the symbol between them. Both arms are printed: an interval '
+    + 'truncated at infinity omits the arm a reader most wants to see.';
+  else rule = 'The risk-difference interval lies entirely on one side of zero, so both limits are '
+    + 'reciprocated and their order reversed — the reciprocal of the upper risk-difference limit '
+    + 'is the lower NNT limit.';
+  var h = '<div class="stats">'
+   + stat('Risk, ' + (d.nameT || 'product'), fx(100 * o.pT, 1) + '%',
+          'p_t = e_t / n_t = ' + d.eT + ' / ' + d.nT)
+   + stat('Risk, ' + (d.nameC || 'comparator'), fx(100 * o.pC, 1) + '%',
+          'p_c = e_c / n_c = ' + d.eC + ' / ' + d.nC)
+   + stat('Risk difference', fx(100 * o.rd, 1) + ' pp ' + ci(100 * o.lo, 100 * o.hi, 1),
+          'RD = p_t − p_c; 95% CI = RD ± 1.96 × √[p_t(1−p_t)/n_t + p_c(1−p_c)/n_c]; SE = '
+          + fx(100 * o.se, 2) + ' pp')
+   + stat('Risk ratio', fx(o.rr, 2), 'RR = p_t / p_c = ' + fx(o.pT, 4) + ' / ' + fx(o.pC, 4))
+   + stat(o.spans ? 'NNT, Altman notation' : 'Number needed to treat', nntText(o),
+          'NNT = 1 / |risk difference| = 1 / ' + fx(Math.abs(o.d), 4)
+          + '; limits are the reciprocals of the interval limits', 'hero')
+   + '</div>'
+   + '<div class="note"><b>Interval rule applied.</b> ' + esc(rule) + '</div>'
+   + '<p class="small muted">Reported as: <b>' + esc(d.label || 'the outcome') + '</b>, '
+   + esc(d.nameT || 'product') + ' against ' + esc(d.nameC || 'comparator')
+   + ' at ' + esc(d.horizon || 'the stated horizon') + ' — ' + esc(nntText(o))
+   + '. Baseline risk assumed: ' + fx(100 * o.pC, 1) + '% in the comparator arm; an NNT computed at one '
+   + 'baseline risk does not transfer to a population with a different one.</p>';
+  if (canonB) h += '<div class="canoncheck"><b>Canonical value:</b> ' + esc(canonB) + '</div>';
+  $('bOut').innerHTML = h;
+}
+function readRate(){
+  var eT = numOrNull($('rET').value), pT = numOrNull($('rPT').value),
+      eC = numOrNull($('rEC').value), pC = numOrNull($('rPC').value);
+  var ok = eT > 0 && pT > 0 && eC > 0 && pC > 0;
+  return { ok:ok, eT:eT, pT:pT, eC:eC, pC:pC, label:$('rLabel').value,
+           nameT:$('rNameT').value, nameC:$('rNameC').value, fav:$('rDir').value === 'fav',
+           o:ok ? rateEffect(eT, pT, eC, pC, $('rDir').value === 'fav') : null };
+}
+function renderRate(){
+  var d = readRate();
+  if (!d.ok){ $('rOut').innerHTML = '<div class="note">Enter a positive event count and a positive '
+    + 'person-year denominator for both arms. The log-scale interval for the rate ratio is undefined '
+    + 'when either arm has no events.</div>'; return; }
+  var o = d.o;
+  var h = '<div class="stats">'
+   + stat('Incidence rate, ' + (d.nameT || 'product'), fx(o.irT, 2) + ' /100 PY',
+          'IR_t = 100 × d_t / PY_t = 100 × ' + d.eT + ' / ' + d.pT)
+   + stat('Incidence rate, ' + (d.nameC || 'comparator'), fx(o.irC, 2) + ' /100 PY',
+          'IR_c = 100 × d_c / PY_c = 100 × ' + d.eC + ' / ' + d.pC)
+   + stat('Rate difference', fx(o.ird, 2) + ' ' + ci(o.lo, o.hi, 2),
+          'IRD = IR_t − IR_c; 95% CI = IRD ± 1.96 × 100√(d_t/PY_t² + d_c/PY_c²), per 100 PY')
+   + stat('Rate ratio', fx(o.rr, 2) + ' ' + ci(o.rrLo, o.rrHi, 2),
+          'RR = IR_t / IR_c; 95% CI = RR × exp(±1.96√(1/d_t + 1/d_c))')
+   + stat('Excess per 1,000 patient-years', fx(o.excess, 1) + ' ' + ci(o.excessLo, o.excessHi, 1),
+          'excess = 1,000 × IRD / 100')
+   + stat((o.kind === 'NNTB' ? 'NNTB' : 'NNH') + ' per year', fx(o.nn, 0),
+          (o.kind === 'NNTB' ? 'NNTB' : 'NNH') + ' = 100 / |IRD| — patients treated for one year for one '
+          + (o.kind === 'NNTB' ? 'additional benefit event' : 'additional harm event'), 'hero')
+   + '</div>'
+   + '<div class="note">' + (o.spansNull
+      ? 'The rate-difference interval includes zero: the data are compatible with no difference, and the '
+        + 'reciprocal should be read as a point estimate only, with the interval on the rate-difference scale.'
+      : 'The rate-difference interval excludes zero. Report the rate difference and the excess per 1,000 '
+        + 'patient-years as the headline; the rate ratio goes alongside, never as the headline.') + '</div>';
+  if (canonR) h += '<div class="canoncheck"><b>Canonical value:</b> ' + esc(canonR) + '</div>';
+  $('rOut').innerHTML = h;
+}
+['bLabel','bDir','bNameT','bET','bNT','bNameC','bEC','bNC','bHorizon'].forEach(function(id){
+  $(id).addEventListener('input', function(){ canonB = null; renderBinary(); });
+  $(id).addEventListener('change', function(){ canonB = null; renderBinary(); });
+});
+['rLabel','rDir','rNameT','rET','rPT','rNameC','rEC','rPC'].forEach(function(id){
+  $(id).addEventListener('input', function(){ canonR = null; renderRate(); });
+  $(id).addEventListener('change', function(){ canonR = null; renderRate(); });
+});
+$('bEx').addEventListener('change', function(){
+  if (this.value === '') return;
+  var e = EX_BINARY[+this.value];
+  $('bLabel').value = e.label; $('bDir').value = e.dir; $('bHorizon').value = e.h;
+  $('bNameT').value = e.t; $('bNameC').value = e.c;
+  $('bET').value = e.eT; $('bNT').value = e.nT; $('bEC').value = e.eC; $('bNC').value = e.nC;
+  canonB = e.canon; renderBinary();
+});
+$('rEx').addEventListener('change', function(){
+  if (this.value === '') return;
+  var e = EX_RATE[+this.value];
+  $('rLabel').value = e.label; $('rDir').value = 'unfav';
+  $('rNameT').value = 'Therapex'; $('rNameC').value = 'Active comparator';
+  $('rET').value = e.eT; $('rPT').value = e.pT; $('rEC').value = e.eC; $('rPC').value = e.pC;
+  canonR = e.canon; renderRate();
+});
+canonB = EX_BINARY[0].canon; canonR = EX_RATE[3].canon;
+renderBinary(); renderRate();
+
+/* ==================================================================== *
+ * 3. EFFECTS TABLE                                                     *
+ * ==================================================================== */
+var EF_COLS = [['e','Effect'],['d','Short description'],['u','Unit'],['c','Comparator'],
+               ['p','Product'],['x','Uncertainties / strength of evidence'],['r','References']];
+function efBlank(s){ return { s:s, e:'', d:'', u:'', c:'', p:'', x:'', r:'' }; }
+function efRender(){
+  var rows = STATE.effects.rows, h = '', i, k, sec;
+  var order = [['fav','Favourable effects'],['unfav','Unfavourable effects']];
+  for (sec = 0; sec < order.length; sec++){
+    h += '<tr class="grouphead"><td colspan="8">' + order[sec][1] + '</td></tr>';
+    var any = false;
+    for (i = 0; i < rows.length; i++){
+      if (rows[i].s !== order[sec][0]) continue;
+      any = true;
+      h += '<tr><td class="ctl rowbtns"><button class="tiny" data-act="up" data-i="' + i + '" title="Move up">↑</button> '
+         + '<button class="tiny" data-act="dn" data-i="' + i + '" title="Move down">↓</button> '
+         + '<button class="tiny" data-act="del" data-i="' + i + '" title="Delete row">×</button></td>';
+      for (k = 0; k < EF_COLS.length; k++)
+        h += '<td contenteditable="true" data-i="' + i + '" data-f="' + EF_COLS[k][0] + '">'
+           + esc(rows[i][EF_COLS[k][0]]) + '</td>';
+      h += '</tr>';
+    }
+    if (!any) h += '<tr><td></td><td colspan="7" class="muted small">No rows. A blank is an answer: '
+      + 'where a quantity cannot be estimated, write “not estimable” and the reason, not nothing.</td></tr>';
+  }
+  $('efBody').innerHTML = h;
+  var c = $('efComp').value || 'Comparator', p = $('efProd').value || 'Product';
+  document.querySelector('#efTable .ch-comp').textContent = c;
+  document.querySelector('#efTable .ch-prod').textContent = p;
+}
+$('efBody').addEventListener('input', function(e){
+  var td = e.target.closest('td[data-f]'); if (!td) return;
+  STATE.effects.rows[+td.getAttribute('data-i')][td.getAttribute('data-f')] = td.textContent;
+});
+$('efBody').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-act]'); if (!b) return;
+  var i = +b.getAttribute('data-i'), rows = STATE.effects.rows, act = b.getAttribute('data-act');
+  if (act === 'del') rows.splice(i, 1);
+  else {
+    var dir = act === 'up' ? -1 : 1, j = i + dir;
+    while (j >= 0 && j < rows.length && rows[j].s !== rows[i].s) j += dir;
+    if (j >= 0 && j < rows.length){ var t = rows[i]; rows[i] = rows[j]; rows[j] = t; }
+  }
+  efRender();
+});
+$('efAddFav').addEventListener('click', function(){ STATE.effects.rows.push(efBlank('fav')); efRender(); });
+$('efAddUnfav').addEventListener('click', function(){ STATE.effects.rows.push(efBlank('unfav')); efRender(); });
+$('efClear').addEventListener('click', function(){ STATE.effects.rows = []; efRender(); });
+$('efLoad').addEventListener('click', function(){
+  STATE.effects.rows = EX_EFFECTS.map(function(r){
+    return { s:r.s, e:r.e, d:r.d, u:r.u, c:r.c, p:r.p, x:r.x, r:r.r };
+  });
+  $('efComp').value = 'Comparator biologic'; $('efProd').value = 'Therapex';
+  efRender();
+});
+$('efComp').addEventListener('input', efRender);
+$('efProd').addEventListener('input', efRender);
+efRender();
+
+/* ==================================================================== *
+ * 4. MCDA                                                              *
+ * ==================================================================== */
+function mBlank(){ return { name:'', side:'benefit', dir:'up', worst:0, best:100, a:0, b:0, c:0, swing:0 }; }
+function mPair(){ var p = $('mPair').value.split('|'); return { a:p[0], b:p[1] }; }
+function mAltName(k){ return $('m' + k).value || ('Alternative ' + k); }
+function mBuild(){
+  var cs = STATE.mcda.criteria, h = '', i;
+  for (i = 0; i < cs.length; i++){
+    var c = cs[i];
+    h += '<tr data-i="' + i + '">'
+      + '<td class="ctl rowbtns"><button class="tiny" data-act="up" data-i="' + i + '">↑</button> '
+      + '<button class="tiny" data-act="dn" data-i="' + i + '">↓</button> '
+      + '<button class="tiny" data-act="del" data-i="' + i + '">×</button></td>'
+      + '<td><input type="text" data-f="name" value="' + esc(c.name) + '"></td>'
+      + '<td><select data-f="side"><option value="benefit"' + (c.side === 'benefit' ? ' selected' : '')
+      + '>Favourable</option><option value="risk"' + (c.side === 'risk' ? ' selected' : '')
+      + '>Unfavourable</option></select></td>'
+      + '<td><select data-f="dir"><option value="up"' + (c.dir === 'up' ? ' selected' : '')
+      + '>Higher better</option><option value="down"' + (c.dir === 'down' ? ' selected' : '')
+      + '>Lower better</option></select></td>'
+      + '<td class="num"><input type="number" step="any" data-f="worst" value="' + esc(c.worst) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="best" value="' + esc(c.best) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="a" value="' + esc(c.a) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="b" value="' + esc(c.b) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="c" value="' + esc(c.c) + '"></td>'
+      + '<td class="num"><input type="number" step="any" min="0" data-f="swing" value="' + esc(c.swing) + '"></td>'
+      + '<td class="num o-w"></td><td class="num o-vA"></td><td class="num o-vB"></td>'
+      + '<td class="num o-vC"></td><td class="num o-d"></td></tr>';
+  }
+  if (!cs.length) h = '<tr><td colspan="15" class="muted small" style="padding:1em">No criteria. '
+    + 'Add one, or load the Therapex example. The range is part of the criterion: record the worst and '
+    + 'best levels here and repeat them wherever the weight is quoted.</td></tr>';
+  $('mBody').innerHTML = h;
+  mCompute();
+}
+function mCompute(){
+  var cs = STATE.mcda.criteria, p = mPair();
+  var model = mcdaCompute(cs), diff = mcdaDiff(model, p.a, p.b);
+  var rows = $('mBody').querySelectorAll('tr[data-i]'), i;
+  for (i = 0; i < rows.length; i++){
+    var r = model.rows[i], tr = rows[i], c = cs[i];
+    var wcell = tr.querySelector('.o-w');
+    wcell.textContent = model.totalSwing > 0 ? fmtWeight(r.weight) : '—';
+    wcell.title = 'ω = swing points / Σ swing points = ' + fx(c.swing, 0) + ' / '
+                + fx(model.totalSwing, 0);
+    ['A','B','C'].forEach(function(k){
+      var vc = tr.querySelector('.o-v' + k);
+      vc.textContent = fx(r.v[k], 1);
+      vc.title = 'v = 100 × (x − worst) / (best − worst)'
+               + (c.dir === 'down' ? ', reversed because lower is better' : '')
+               + ' = 100 × (' + fx(c[k.toLowerCase()], 2) + ' − ' + fx(c.worst, 2) + ') / ('
+               + fx(c.best, 2) + ' − ' + fx(c.worst, 2) + ')';
+    });
+    var cell = tr.querySelector('.o-d');
+    cell.textContent = fxs(diff.rows[i].contrib, 2);
+    cell.style.color = diff.rows[i].contrib >= 0 ? 'var(--ben)' : 'var(--risk)';
+    cell.title = 'ω × [v(' + p.a + ') − v(' + p.b + ')] = ' + fmtWeight(r.weight)
+               + ' × (' + fx(r.v[p.a], 1) + ' − ' + fx(r.v[p.b], 1) + ')';
+  }
+  ['A','B','C'].forEach(function(k){
+    var nm = mAltName(k), th = $('mh' + k);
+    th.textContent = 'x(' + k + ') ' + (nm.length > 24 ? nm.slice(0, 22) + '…' : nm);
+    th.title = nm;
+    $('mhv' + k).textContent = 'v(' + k + ')';
+  });
+  $('mhContrib').textContent = 'ω·[v(' + p.a + ')−v(' + p.b + ')]';
+  $('msH').textContent = 'Reverses ' + p.a + ' − ' + p.b + ' at';
+  $('mFoot').innerHTML = cs.length ? '<tr class="total"><td class="ctl"></td><td>Total</td><td></td><td></td>'
+    + '<td></td><td></td><td class="num">—</td><td class="num">—</td><td class="num">—</td>'
+    + '<td class="num">' + fx(model.totalSwing, 0) + '</td><td class="num">1.000</td>'
+    + '<td class="num">' + fx(model.scores.A, 1) + '</td><td class="num">' + fx(model.scores.B, 1) + '</td>'
+    + '<td class="num">' + fx(model.scores.C, 1) + '</td><td class="num">' + fxs(diff.total, 1) + '</td></tr>' : '';
+  var nm = { A:mAltName('A'), B:mAltName('B'), C:mAltName('C') };
+  $('mScores').innerHTML =
+      stat('V(' + nm.A + ')', fx(model.scores.A, 1), 'V(a) = Σ ωᵢ vᵢ(a)')
+    + stat('V(' + nm.B + ')', fx(model.scores.B, 1), 'V(a) = Σ ωᵢ vᵢ(a)')
+    + stat('V(' + nm.C + ')', fx(model.scores.C, 1), 'V(a) = Σ ωᵢ vᵢ(a)')
+    + stat('Difference ' + p.a + ' − ' + p.b, fxs(diff.total, 1),
+           'V(' + p.a + ') − V(' + p.b + ') = Σ ωᵢ [vᵢ(' + p.a + ') − vᵢ(' + p.b + ')]', 'hero')
+    + stat('Favourable-effect contribution', fxs(diff.benefit, 1),
+           'sum of the displayed contributions of criteria marked favourable')
+    + stat('Unfavourable-effect contribution', fxs(diff.risk, 1),
+           'sum of the displayed contributions of criteria marked unfavourable');
+  var s = '', j;
+  for (j = 0; j < cs.length; j++){
+    var tp = tippingPoint(cs, j, p.a, p.b), base = +cs[j].swing || 0, read;
+    if (tp === null) read = 'No attainable weight. No value of these swing points, holding the others '
+      + 'fixed, moves the difference through zero.';
+    else if (base > 0) read = 'The difference passes zero at ' + fx(tp, 0) + ' points, '
+      + fx(tp / base, 2) + '× the elicited ' + fx(base, 0) + '. '
+      + (tp > base ? 'The conclusion holds unless this criterion is judged that much more important.'
+                   : 'The conclusion holds only while this criterion is judged at least that important.');
+    else read = 'The difference passes zero at ' + fx(tp, 0) + ' points.';
+    s += '<tr><td>' + esc(cs[j].name || '—') + '</td><td class="num">' + fx(base, 0) + '</td>'
+       + '<td class="num">' + (tp === null ? 'no attainable weight' : fx(tp, 0)) + '</td>'
+       + '<td class="small">' + esc(read) + '</td></tr>';
+  }
+  $('mSensBody').innerHTML = s || '<tr><td colspan="4" class="muted small">No criteria.</td></tr>';
+}
+$('mBody').addEventListener('input', function(e){
+  var f = e.target.getAttribute('data-f'); if (!f) return;
+  var i = +e.target.closest('tr').getAttribute('data-i');
+  var v = e.target.value;
+  STATE.mcda.criteria[i][f] = (f === 'name' || f === 'side' || f === 'dir') ? v : numOrNull(v);
+  mCompute();
+});
+$('mBody').addEventListener('change', function(e){
+  if (e.target.tagName === 'SELECT') mCompute();
+});
+$('mBody').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-act]'); if (!b) return;
+  var i = +b.getAttribute('data-i'), cs = STATE.mcda.criteria, act = b.getAttribute('data-act');
+  if (act === 'del') cs.splice(i, 1);
+  else { var j = i + (act === 'up' ? -1 : 1);
+         if (j >= 0 && j < cs.length){ var t = cs[i]; cs[i] = cs[j]; cs[j] = t; } }
+  mBuild();
+});
+$('mAdd').addEventListener('click', function(){ STATE.mcda.criteria.push(mBlank()); mBuild(); });
+$('mClear').addEventListener('click', function(){ STATE.mcda.criteria = []; mBuild(); });
+function mLoadSet(ex){
+  STATE.mcda.criteria = ex.criteria.map(function(c){
+    return { name:c.name, side:c.side, dir:c.dir, worst:c.worst, best:c.best,
+             a:c.a, b:c.b, c:c.c, swing:c.swing };
+  });
+  $('mA').value = ex.alts[0]; $('mB').value = ex.alts[1]; $('mC').value = ex.alts[2];
+  mBuild();
+}
+$('mLoad').addEventListener('click', function(){ mLoadSet(EX_MCDA); });
+$('mLoadHR').addEventListener('click', function(){ mLoadSet(EX_MCDA_HR); });
+$('mPair').addEventListener('change', mCompute);
+['mA','mB','mC'].forEach(function(id){ $(id).addEventListener('input', mCompute); });
+mBuild();
+
+/* ==================================================================== *
+ * 5. BRAT                                                              *
+ * ==================================================================== */
+function btRender(){
+  ['fav','unfav'].forEach(function(side){
+    var arr = STATE.brat[side], h = '', i;
+    for (i = 0; i < arr.length; i++){
+      h += '<div class="pel" data-side="' + side + '" data-i="' + i + '" style="padding:.55em .6em">'
+        + '<div class="grid" style="grid-template-columns:1fr auto;gap:.35em">'
+        + '<input type="text" data-f="name" placeholder="Leaf: attribute" value="' + esc(arr[i].name) + '">'
+        + '<button class="tiny ctl" data-act="del">×</button></div>'
+        + '<div class="grid g2" style="margin-top:.35em">'
+        + '<input type="text" data-f="unit" placeholder="Unit and direction" value="' + esc(arr[i].unit) + '">'
+        + '<input type="text" data-f="src" placeholder="Source" value="' + esc(arr[i].src) + '"></div></div>';
+    }
+    if (!arr.length) h = '<div class="muted small">No leaves yet.</div>';
+    $(side === 'fav' ? 'btFav' : 'btUnfav').innerHTML = h;
+  });
+}
+function btWire(id){
+  $(id).addEventListener('input', function(e){
+    var w = e.target.closest('[data-side]'); if (!w || !e.target.getAttribute('data-f')) return;
+    STATE.brat[w.getAttribute('data-side')][+w.getAttribute('data-i')][e.target.getAttribute('data-f')]
+      = e.target.value;
+  });
+  $(id).addEventListener('click', function(e){
+    var b = e.target.closest('button[data-act=del]'); if (!b) return;
+    var w = b.closest('[data-side]');
+    STATE.brat[w.getAttribute('data-side')].splice(+w.getAttribute('data-i'), 1); btRender();
+  });
+}
+btWire('btFav'); btWire('btUnfav');
+$('btAddFav').addEventListener('click', function(){ STATE.brat.fav.push({name:'',unit:'',src:''}); btRender(); });
+$('btAddUnfav').addEventListener('click', function(){ STATE.brat.unfav.push({name:'',unit:'',src:''}); btRender(); });
+
+function brBlank(){ return { name:'', side:'benefit', basis:'prop', eP:null, nP:null, eC:null, nC:null, rank:'' }; }
+function brBuild(){
+  var rows = STATE.brat.rows, h = '', i;
+  for (i = 0; i < rows.length; i++){
+    var r = rows[i];
+    h += '<tr data-i="' + i + '">'
+      + '<td class="ctl rowbtns"><button class="tiny" data-act="up" data-i="' + i + '">↑</button> '
+      + '<button class="tiny" data-act="dn" data-i="' + i + '">↓</button> '
+      + '<button class="tiny" data-act="del" data-i="' + i + '">×</button></td>'
+      + '<td><input type="text" data-f="name" value="' + esc(r.name) + '"></td>'
+      + '<td><select data-f="side"><option value="benefit"' + (r.side === 'benefit' ? ' selected' : '')
+      + '>Favourable</option><option value="risk"' + (r.side === 'risk' ? ' selected' : '')
+      + '>Unfavourable</option></select></td>'
+      + '<td><select data-f="basis"><option value="prop"' + (r.basis === 'prop' ? ' selected' : '')
+      + '>Proportion</option><option value="rate"' + (r.basis === 'rate' ? ' selected' : '')
+      + '>Rate</option></select></td>'
+      + '<td class="num"><input type="number" step="any" data-f="eP" value="' + esc(r.eP) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="nP" value="' + esc(r.nP) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="eC" value="' + esc(r.eC) + '"></td>'
+      + '<td class="num"><input type="number" step="any" data-f="nC" value="' + esc(r.nC) + '"></td>'
+      + '<td class="num"><input type="text" data-f="rank" value="' + esc(r.rank) + '" style="width:52px"></td>'
+      + '<td class="o-est"></td><td class="o-den small"></td></tr>';
+  }
+  if (!rows.length) h = '<tr><td colspan="11" class="muted small" style="padding:1em">No criteria. '
+    + 'Add one, or load the Therapex example. Denominators are patients for proportions and '
+    + 'patient-years for rates — the column exists so that nothing on the page invites a reader to '
+    + 'subtract one from the other.</td></tr>';
+  $('brBody').innerHTML = h;
+  brCompute();
+}
+function brResults(){
+  var out = [], i;
+  for (i = 0; i < STATE.brat.rows.length; i++){
+    var r = STATE.brat.rows[i];
+    var ok = r.eP !== null && r.nP > 0 && r.eC !== null && r.nC > 0
+          && (r.basis === 'rate' || (r.eP <= r.nP && r.eC <= r.nC));
+    out.push(ok ? bratRow(r) : null);
+  }
+  return out;
+}
+function brCompute(){
+  var res = brResults(), trs = $('brBody').querySelectorAll('tr[data-i]'), i;
+  for (i = 0; i < trs.length; i++){
+    var o = res[i], r = STATE.brat.rows[i];
+    if (!o){ trs[i].querySelector('.o-est').textContent = '—';
+             trs[i].querySelector('.o-den').textContent = 'not estimable'; continue; }
+    var c = trs[i].querySelector('.o-est');
+    c.innerHTML = '<b>' + esc((o.est >= 0 ? '+' : '') + fx(o.est, o.dp)) + '</b> '
+                + esc(ci(o.lo, o.hi, o.dp))
+                + '<span class="cellnote">' + (r.basis === 'rate'
+                    ? '1000 × (d_t/PY_t − d_c/PY_c)'
+                    : '1000 × (e_t/n_t − e_c/n_c)') + '</span>';
+    trs[i].querySelector('.o-den').textContent = o.denom;
+  }
+  brPlot();
+}
+function niceTicks(min, max){
+  var span = max - min; if (!(span > 0)) return [min];
+  var step = Math.pow(10, Math.floor(Math.log(span / 5) / Math.LN10));
+  var err = (span / 5) / step;
+  if (err >= 5) step *= 10; else if (err >= 2) step *= 5; else if (err >= 1) step *= 2;
+  var t = [], v = Math.ceil(min / step) * step;
+  for (; v <= max + step * 1e-9; v += step) t.push(rnd(v, 10));
+  return t;
+}
+function brPlot(){
+  var rows = STATE.brat.rows, res = brResults(), data = [], i;
+  for (i = 0; i < rows.length; i++) if (res[i]) data.push({ r:rows[i], o:res[i] });
+  if (!data.length){ $('brPlot').innerHTML = '<div class="muted small">The forest plot is drawn from '
+    + 'the rows above once they are complete.</div>'; return; }
+  var scale = $('brScale').value;
+  var tf = (scale === 'symlog')
+    ? function(x){ return (x < 0 ? -1 : 1) * Math.log(1 + Math.abs(x)) / Math.LN10; }
+    : function(x){ return x; };
+  var lo = 0, hi = 0;
+  for (i = 0; i < data.length; i++){
+    lo = Math.min(lo, data[i].o.lo, data[i].o.est); hi = Math.max(hi, data[i].o.hi, data[i].o.est);
+  }
+  var pad = (hi - lo) * 0.1 || 1; lo -= pad; hi += pad;
+  var tlo = tf(lo), thi = tf(hi), sp = (thi - tlo) || 1;
+  var W = 780, LW = 250, PW = W - LW - 30, rowH = 26, top = 30;
+  var H = top + data.length * rowH + 52;
+  var X = function(v){ return LW + (tf(v) - tlo) / sp * PW; };
+  var ticks;
+  if (scale === 'symlog'){
+    var cand = [0,1,3,10,30,100,300,1000,3000,-1,-3,-10,-30,-100,-300,-1000,-3000];
+    ticks = cand.filter(function(t){ return t >= lo && t <= hi; }).sort(function(a,b){ return a - b; });
+  } else ticks = niceTicks(lo, hi);
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:' + W
+        + 'px;font-family:inherit" role="img" aria-label="Forest plot of the key benefit-risk summary">';
+  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="#fff"/>';
+  for (i = 0; i < ticks.length; i++){
+    var xt = X(ticks[i]);
+    s += '<line x1="' + xt.toFixed(1) + '" y1="' + (top - 8) + '" x2="' + xt.toFixed(1) + '" y2="'
+       + (top + data.length * rowH + 4) + '" stroke="' + (ticks[i] === 0 ? '#5a6470' : '#eceae4')
+       + '" stroke-width="1"' + (ticks[i] === 0 ? ' stroke-dasharray="4 3"' : '') + '/>';
+    s += '<text x="' + xt.toFixed(1) + '" y="' + (top + data.length * rowH + 20)
+       + '" text-anchor="middle" font-size="10" fill="#6d7780">' + esc(fx(ticks[i], 0)) + '</text>';
+  }
+  for (i = 0; i < data.length; i++){
+    var d = data[i], y = top + i * rowH + rowH / 2;
+    var col = d.r.side === 'benefit' ? '#2c6157' : '#8f4630';
+    var lab = (d.r.name || '—'); if (lab.length > 40) lab = lab.slice(0, 38) + '…';
+    s += '<text x="' + (LW - 10) + '" y="' + (y + 3.5) + '" text-anchor="end" font-size="11" fill="#1c2126">'
+       + esc(lab) + '</text>';
+    var x1 = X(d.o.lo), x2 = X(d.o.hi), xe = X(d.o.est);
+    s += '<line x1="' + x1.toFixed(1) + '" y1="' + y + '" x2="' + x2.toFixed(1) + '" y2="' + y
+       + '" stroke="' + col + '" stroke-width="1.4"/>'
+       + '<line x1="' + x1.toFixed(1) + '" y1="' + (y - 4) + '" x2="' + x1.toFixed(1) + '" y2="' + (y + 4)
+       + '" stroke="' + col + '" stroke-width="1.4"/>'
+       + '<line x1="' + x2.toFixed(1) + '" y1="' + (y - 4) + '" x2="' + x2.toFixed(1) + '" y2="' + (y + 4)
+       + '" stroke="' + col + '" stroke-width="1.4"/>'
+       + '<rect x="' + (xe - 3.6).toFixed(1) + '" y="' + (y - 3.6) + '" width="7.2" height="7.2" fill="' + col + '"/>'
+       + '<title>' + esc(d.r.name + ': ' + fx(d.o.est, d.o.dp) + ' ' + ci(d.o.lo, d.o.hi, d.o.dp)
+       + ' ' + d.o.denom) + '</title>';
+  }
+  s += '<text x="' + LW + '" y="' + (H - 16) + '" font-size="10" fill="#6d7780">'
+     + 'Difference, product minus comparator — favourable effects per 1,000 patients treated; '
+     + 'unfavourable effects per 1,000 patient-years' + (scale === 'symlog' ? ' (symmetric log axis)' : '')
+     + '</text>';
+  s += '<rect x="0" y="' + (H - 23) + '" width="8" height="8" fill="#2c6157"/>'
+     + '<text x="12" y="' + (H - 16) + '" font-size="10" fill="#6d7780">favourable</text>'
+     + '<rect x="78" y="' + (H - 23) + '" width="8" height="8" fill="#8f4630"/>'
+     + '<text x="90" y="' + (H - 16) + '" font-size="10" fill="#6d7780">unfavourable</text>';
+  s += '</svg>';
+  $('brPlot').innerHTML = s;
+}
+$('brBody').addEventListener('input', function(e){
+  var f = e.target.getAttribute('data-f'); if (!f) return;
+  var i = +e.target.closest('tr').getAttribute('data-i');
+  STATE.brat.rows[i][f] = (f === 'name' || f === 'side' || f === 'basis' || f === 'rank')
+    ? e.target.value : numOrNull(e.target.value);
+  brCompute();
+});
+$('brBody').addEventListener('change', function(e){ if (e.target.tagName === 'SELECT') brCompute(); });
+$('brBody').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-act]'); if (!b) return;
+  var i = +b.getAttribute('data-i'), rows = STATE.brat.rows, act = b.getAttribute('data-act');
+  if (act === 'del') rows.splice(i, 1);
+  else { var j = i + (act === 'up' ? -1 : 1);
+         if (j >= 0 && j < rows.length){ var t = rows[i]; rows[i] = rows[j]; rows[j] = t; } }
+  brBuild();
+});
+$('brAdd').addEventListener('click', function(){ STATE.brat.rows.push(brBlank()); brBuild(); });
+$('brClear').addEventListener('click', function(){ STATE.brat.rows = []; brBuild(); });
+$('brScale').addEventListener('change', brPlot);
+$('brLoad').addEventListener('click', function(){
+  STATE.brat.rows = EX_BRAT.map(function(r){
+    return { name:r.name, side:r.side, basis:r.basis, eP:r.eP, nP:r.nP, eC:r.eC, nC:r.nC, rank:String(r.rank) };
+  });
+  STATE.brat.fav = EX_TREE.fav.map(function(l){ return { name:l.name, unit:l.unit, src:l.src }; });
+  STATE.brat.unfav = EX_TREE.unfav.map(function(l){ return { name:l.name, unit:l.unit, src:l.src }; });
+  $('btRoot').value = EX_TREE.root; $('btExcl').value = EX_TREE.excl;
+  btRender(); brBuild();
+});
+btRender(); brBuild();
+
+/* ==================================================================== *
+ * 6. PrOACT-URL                                                        *
+ * ==================================================================== */
+var PROACT = [
+ ['Pr','Problem',
+  "Determine the nature of the problem and its context; frame it. What is being decided, by whom, why now, and what happens if nothing is decided?"],
+ ['O','Objectives',
+  "What are the overall purposes to be achieved? What would a good outcome look like for a patient in this population? EMA inserts Criteria explicitly at this point: identify the criteria for favourable and for unfavourable effects, attach the value tree, and state the exclusions."],
+ ['A','Alternatives',
+  "Which options will be evaluated against the criteria? Include no action, and include the options you expect to reject."],
+ ['C','Consequences',
+  "How does each alternative perform on each criterion? Absolute measures, same population, same horizon, with intervals."],
+ ['T','Trade-offs',
+  "Assess the balance between favourable and unfavourable effects. State the trade explicitly: how many additional benefit units, for how many additional events of what severity, in whom, over what period."],
+ ['U','Uncertainty',
+  "Report the uncertainty attaching to each effect. Which way does each move the balance? Which are resolvable, and by what?"],
+ ['R','Risk attitude and tolerance',
+  "Judge the relative importance of the decision-maker's risk attitude. Re-run the trade at the unfavourable bound of the key estimates and state whether the conclusion holds."],
+ ['L','Linked decisions',
+  "What does this decision commit you to, and what earlier decision does it revise? Is it consistent with the position taken on comparable products, and on this product last cycle?"]
+];
+function prRender(){
+  var h = '', i;
+  for (i = 0; i < PROACT.length; i++){
+    var p = PROACT[i], v = STATE.proact[p[0]] || '';
+    var flag = (!v.trim() && (p[0] === 'R' || p[0] === 'L'));
+    h += '<div class="pel' + (flag ? ' flag' : '') + '"><div class="ph"><span class="badge">' + esc(p[0])
+      + '</span><span class="pn">' + esc(p[1]) + '</span></div><div class="pp">' + esc(p[2]) + '</div>'
+      + '<textarea rows="3" data-el="' + p[0] + '" placeholder="Entry">' + esc(v) + '</textarea></div>';
+  }
+  $('prList').innerHTML = h;
+  prMeter();
+}
+function prMeter(){
+  var done = 0, empty = [], i;
+  for (i = 0; i < PROACT.length; i++){
+    if ((STATE.proact[PROACT[i][0]] || '').trim()) done++;
+    else empty.push(PROACT[i][0] + ' — ' + PROACT[i][1]);
+  }
+  var rl = !(STATE.proact.R || '').trim() || !(STATE.proact.L || '').trim();
+  var h = '<div class="row" style="justify-content:space-between"><b>Completeness</b><span class="small muted">'
+        + done + ' of 8 elements entered</span></div>'
+        + '<div class="meter"><i style="width:' + (done / 8 * 100) + '%"></i></div>';
+  h += empty.length
+     ? '<div class="small muted">Still empty: ' + esc(empty.join(' · ')) + '</div>'
+     : '<div class="small" style="color:var(--ben)">All eight elements entered.</div>';
+  if (rl) h += '<div class="warnband" style="margin:.7em 0 0">Risk attitude (R) and Linked decisions (L) '
+    + 'are the two elements most often left blank and the two a regulator reads most closely, because '
+    + 'they are where an assessment either does or does not confront the possibility that it is wrong. '
+    + 'Fill them before the worksheet is circulated.</div>';
+  $('prMeter').innerHTML = h;
+}
+$('prList').addEventListener('input', function(e){
+  var k = e.target.getAttribute('data-el'); if (!k) return;
+  STATE.proact[k] = e.target.value; prMeter();
+});
+prRender();
+
+/* ==================================================================== *
+ * 7. CONCLUSION WORDING LIBRARY                                        *
+ * ==================================================================== */
+var WORDING = [
+ { code:'A', title:'Favourable and unchanged', pats:[
+  {id:'A1', name:'Standing conclusion, no new data',
+   t:"During the reporting interval no new information has been received that alters the established benefit–risk profile of [product] in [indication as authorised]. The benefit of [effect: absolute measure against comparator over horizon] is unchanged. The risks characterised in the reference safety information remain adequately characterised, and the measures in place remain appropriate. The benefit–risk balance of [product] in [indication] therefore remains favourable, and no change to the terms of the marketing authorisation is proposed.",
+   c:"Commits you to a current reference safety information document and to producing the absolute benefit figure on request. It says nothing about subgroups, which is why it is the wrong pattern if a subgroup question is live."},
+  {id:'A2', name:'New data reviewed, conclusion unchanged',
+   t:"[Study or data source] has been reviewed in full. [Finding, quantified, with interval]. Applied to the currently authorised population, this revises the estimated [risk] from [x] to [y] per 1,000 patient-years and does not alter the direction of the balance against [comparator]. The benefit–risk balance in [indication] remains favourable. [Source] has been reflected in [named section of the risk management plan or product information]; no further action is proposed at this time.",
+   c:"Commits you to a quantified change and a documentary consequence. It should replace A1 whenever any new data exist."},
+  {id:'A3', name:'Favourable, with a residual uncertainty stated',
+   t:"The balance remains favourable in [population] against [comparator]. One uncertainty is unresolved: [specific quantity], which could move [the estimate] by up to [magnitude] in the direction of [less favourable]. Taking that bound, the balance [remains favourable / becomes marginal]. The uncertainty is addressed by [study or analysis], reporting [date], on receipt of which this conclusion is re-read.",
+   c:"Commits you to the sensitivity result you have just asserted — someone will check it — and to a study with a date."},
+  {id:'A4', name:'Favourable against one comparator, not established against another',
+   t:"Against [comparator A], the balance is favourable: [figures]. Against [comparator B], superiority on [criterion] has not been established ([estimate, interval spanning the null]) while [excess risk figures] are observed; on the available evidence the balance against [comparator B] is [neutral / not established]. The conclusion of this assessment is stated against [comparator A], which is the alternative available to [population] in [setting].",
+   c:"Commits you to a reason why comparator A is the operative one, and protects you when a favourable line is later quoted without its comparator."}]},
+ { code:'B', title:'Favourable with new conditions', pats:[
+  {id:'B1', name:'Labelling change',
+   t:"The balance remains favourable in [indication] provided that [risk] is reflected in the product information. [Risk] occurs at [rate] per [denominator] against [comparator rate], is [serious / reversible / of [duration]], and is associated with [identifiable factors]. A [warning / precaution / undesirable-effects entry / posology change] is therefore proposed in sections [x] of the summary of product characteristics and the corresponding sections of the package leaflet. No restriction of the indication is proposed, because [reason].",
+   c:"Commits you to the proposition that information reaching the prescriber is sufficient to change what happens, and to naming the sections, which makes implementation checkable."},
+  {id:'B2', name:'Additional risk minimisation with an effectiveness indicator',
+   t:"The balance is favourable subject to the introduction of [measure]. The measure is intended to [mechanism, stated as a behaviour or an exposure that changes]. Its effectiveness will be assessed against [outcome indicator], with an expected value of [x] and a value of [y] treated as failure, first assessed at [date]. If the indicator does not reach [x], [named next action] will be considered.",
+   c:"Commits you to an outcome indicator rather than a process one, to a failure value declared before you know the result, and to acting when it is reached. A measure with no failure value cannot fail, and will not be believed."},
+  {id:'B3', name:'Conditional on confirmation by an imposed study',
+   t:"The balance is favourable on the current evidence, which rests on [estimate] derived from [source], subject to [named limitation]. That estimate requires confirmation. A [post-authorisation safety study / effectiveness study] is proposed, with a pre-specified analysis in [stratum], an interim analysis at [n events or date], and a final report at [date]. This conclusion is conditional on those results and will be re-read at the interim.",
+   c:"Commits you to the interim, the date, and the possibility of reversal."},
+  {id:'B4', name:'Enhanced surveillance',
+   t:"The balance remains favourable. The residual uncertainty concerns [the magnitude of / the population distribution of] [effect], not the direction of the balance, and is addressed by [targeted follow-up questionnaire / additional monitoring status / registry linkage] with a first review at [date].",
+   c:"Commits you to a review date and to distinguishing, in public, uncertainty about magnitude from uncertainty about direction."}]},
+ { code:'C', title:'Favourable in a restricted population', pats:[
+  {id:'C1', name:'Restriction by an identifiable stratum',
+   t:"The balance is favourable in [population as revised] and is not favourable in [stratum, defined by prospectively ascertainable criteria]. In that stratum the excess is [n] [events] per 1,000 patient-years against [comparator], while the benefit is [figure] compared with [figure] in the remainder of the population. The stratum comprises [x]% of treated patients and accounts for [y]% of the excess events. It is identifiable before treatment is initiated, by [criteria]. A restricted indication excluding [stratum], with a contraindication in [narrower group], is therefore the least restrictive measure capable of addressing the imbalance. It is expected to avert approximately [n] [events] annually, at a cost of approximately [n] [benefit units] forgone where [alternative] remains available.",
+   c:"Commits you to identifiability at the point of prescribing, to the arithmetic of events averted and benefit forgone — both figures, never only the first — and to measuring whether the restriction is observed."},
+  {id:'C2', name:'Restriction by line of therapy',
+   t:"The balance is favourable in patients in whom [alternative] has been tried and has failed, is contraindicated, or is not tolerated. In patients who have not yet received [alternative], the balance is [unfavourable / not established] against that alternative, because [figures]. The indication is therefore proposed as second-line in [population].",
+   c:"Commits you to the claim that the alternative exists and is accessible in the markets concerned; where it is not, patients are excluded from treatment altogether and C1's arithmetic changes."},
+  {id:'C3', name:'Contraindication rather than a narrowed indication',
+   t:"The imbalance is confined to [narrowly defined group], which is [size] of the treated population and is sharply bounded by [criterion]. It is addressed by a contraindication rather than by narrowing the indication, because [reason]. In the remaining population the balance is unchanged and is favourable.",
+   c:"Commits you to the group being sharply bounded, which is what distinguishes a contraindication from a restriction in practice."},
+  {id:'C4', name:'Restriction where subgroup benefit data do not exist',
+   t:"The excess [risk] in [stratum] is established at [figure] (95% CI [x] to [y]). Benefit in that stratum has not been measured separately: [source] supports an estimate for the whole population only, and there is no basis for assuming it is the same. The restriction is therefore proposed on the basis of the established excess risk and the absence of a demonstrated benefit in that stratum, rather than on a demonstrated unfavourable balance. [Study] is imposed, including a pre-specified benefit analysis in [stratum], reporting [date].",
+   c:"Commits you to saying out loud that you restricted on incomplete evidence, and to generating the missing data. It is the pattern most often avoided and the one that survives review best."}]},
+ { code:'D', title:'No longer favourable', pats:[
+  {id:'D1', name:'Unfavourable; suspension pending remediation',
+   t:"On the evidence at [sections], the benefit–risk balance of [product] in [indication] is no longer favourable in [population]: [risk figure] against [benefit figure], measured in the same patients, against the same comparator, over the same period. No condition of use identified in this assessment restores a favourable balance; [options considered] were examined and rejected because [reasons]. The balance may be restorable if [remediation or data]. Suspension of the marketing authorisation is therefore proposed, with the conditions for lifting stated as [conditions] and a review at [date].",
+   c:"Commits you to the conditions for lifting — a suspension without them is a withdrawal nobody has admitted to — and to naming what was considered and rejected."},
+  {id:'D2', name:'Unfavourable; revocation',
+   t:"There is no population in which the balance of [product] in [indication] has been shown to remain favourable, and no condition of use capable of restoring it: [what was considered, and why each fails]. Revocation of the marketing authorisation is therefore proposed. Patients currently receiving [product] number approximately [n]; [transition arrangements], and [alternatives] remain available for [population]. A direct healthcare professional communication is proposed at [timing].",
+   c:"Commits you to having tested every rung of the ladder and to a transition plan for patients currently treated. It should never be filed without one."},
+  {id:'D3', name:'Unfavourable in a stratum, favourable elsewhere',
+   t:"In [stratum], the balance is unfavourable against both [comparator A] and [comparator B]: [figures]. This stratum accounts for [y]% of the excess [events] while comprising [x]% of treated patients. In [remaining population] the balance is unchanged and remains favourable. The conclusion is therefore stated separately for the two populations, and the action proposed is [restriction], not [withdrawal], because the excess is confined to a prospectively excludable stratum and the benefit in the remaining population is [unchanged / substantial].",
+   c:"Pairs with C1 and is written from the risk side. It commits you to publishing both population conclusions together, since either alone misleads."},
+  {id:'D4', name:'Unfavourable because the therapeutic context changed',
+   t:"The estimated benefits and risks of [product] are unchanged from the evaluation of [date]. What has changed is the therapeutic context: [alternative] is now authorised and available in [indication], with [comparative figures]. Assessed against the alternatives now available rather than those available at authorisation, the balance in [population] is no longer favourable, notwithstanding that no new safety data have been received.",
+   c:"Commits you to comparator discipline and to defending the claim that the alternative is genuinely available."}]},
+ { code:'E', title:'Insufficient information to conclude', pats:[
+  {id:'E1', name:'No conclusion; data commissioned',
+   t:"The available data do not support a conclusion on the benefit–risk balance in [population / for this question]. Specifically, [the quantity that cannot be estimated] cannot be estimated because [reason]. The following are therefore commissioned: [design, population, endpoint, size, report date]. Until those data are available, the conclusion of [date] stands for [population], and no [action] is taken on the present evidence. This position is re-read at [date] regardless of whether the data have reported.",
+   c:"Commits you to a design and a date, to not acting meanwhile, and to a re-read date that arrives whether or not the data do."},
+  {id:'E2', name:'No conclusion for a subgroup; whole-population conclusion stands',
+   t:"The balance is favourable in [authorised population]. It cannot be stated separately for [subgroup]: [n] patients in that subgroup were exposed in the randomised evidence and [n] events observed, which is compatible with a rate ratio between [x] and [y]. This conclusion should not be read as applying to [subgroup], and [entry] is carried as missing information in the risk management plan.",
+   c:"Commits you to the risk management plan entry, and stops a whole-population conclusion being read into a subgroup by readers who were not told it could not be."},
+  {id:'E3', name:'Signal not yet quantifiable',
+   t:"[N] reports of [event] have been received cumulatively, against an estimated exposure of [n] patient-years. The resulting reporting rate of [x] per 100,000 patient-years cannot be compared with the background incidence in [population] of [y] per 100,000 patient-years without an assumption about under-reporting: under a [n]-fold assumption the observed-to-expected ratio is [z]; under an [m]-fold assumption it is [w]. The data are therefore compatible both with a real excess and with none. No change to the terms of the marketing authorisation is proposed on this evidence. [Named study] is initiated to estimate the rate in a defined cohort with a comparator, reporting [date].",
+   c:"Commits you to publishing your under-reporting assumptions rather than burying them, and to a cohort study. It is the correct response to a disproportionality finding that has not yet met a denominator."},
+  {id:'E4', name:'Conclusion withheld pending a specified analysis',
+   t:"This assessment does not reach a conclusion on [question]. The analysis required is [specified analysis], which is [in progress / commissioned], and the conclusion will be issued as an addendum on [date]. The position in force in the interim is [what stands, and for which population].",
+   c:"Commits you to an addendum with a date, and is preferable in every case to a conclusion drafted to fill a section that had to contain something."}]}
+];
+var wFilterVal = 'all';
+function wRender(){
+  var h = '', i, j;
+  for (i = 0; i < WORDING.length; i++){
+    var g = WORDING[i];
+    if (wFilterVal !== 'all' && wFilterVal !== g.code) continue;
+    h += '<div class="wgroup"><h3>' + esc(g.code) + ' — ' + esc(g.title) + '</h3>';
+    for (j = 0; j < g.pats.length; j++){
+      var p = g.pats[j];
+      var body = esc(p.t).replace(/\[[^\]]*\]/g, function(m){ return '<s>' + m + '</s>'; });
+      h += '<div class="wpat"><div class="wt">' + esc(p.id) + ' · ' + esc(p.name) + '</div>'
+        + '<div class="wx">' + body + '</div>'
+        + '<div class="wc"><b>What it commits you to.</b> ' + esc(p.c) + '</div>'
+        + '<div class="wb"><button class="tiny" data-copy="' + p.id + '">Copy</button>'
+        + '<button class="tiny" data-add="' + p.id + '">'
+        + (STATE.wording[p.id] ? 'Remove from report' : 'Add to report') + '</button>'
+        + '<span class="copied" data-msg="' + p.id + '"></span></div></div>';
+    }
+    h += '</div>';
+  }
+  $('wList').innerHTML = h;
+}
+function wFind(id){
+  for (var i = 0; i < WORDING.length; i++)
+    for (var j = 0; j < WORDING[i].pats.length; j++)
+      if (WORDING[i].pats[j].id === id) return WORDING[i].pats[j];
+  return null;
+}
+$('wFilter').innerHTML = '<button data-f="all">All</button>'
+  + WORDING.map(function(g){ return '<button data-f="' + g.code + '">' + g.code + ' · '
+      + esc(g.title) + '</button>'; }).join('');
+$('wFilter').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-f]'); if (!b) return;
+  wFilterVal = b.getAttribute('data-f'); wRender();
+});
+$('wList').addEventListener('click', function(e){
+  var cb = e.target.closest('button[data-copy]');
+  if (cb){
+    var p = wFind(cb.getAttribute('data-copy')), msg = $('wList')
+      .querySelector('[data-msg="' + cb.getAttribute('data-copy') + '"]');
+    var done = function(t){ msg.textContent = t; setTimeout(function(){ msg.textContent = ''; }, 2500); };
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(p.t).then(function(){ done('Copied to clipboard'); },
+        function(){ done('Copy blocked — select the text and copy manually'); });
+    else done('Clipboard unavailable — select the text and copy manually');
+    return;
+  }
+  var ab = e.target.closest('button[data-add]');
+  if (ab){
+    var id = ab.getAttribute('data-add');
+    if (STATE.wording[id]) delete STATE.wording[id]; else STATE.wording[id] = true;
+    wRender();
+  }
+});
+wRender();
+
+/* ==================================================================== *
+ * 8. REPORT                                                            *
+ * ==================================================================== */
+var DOC_FIELDS = [['dProduct','Product'],['dSubstance','Active substance'],['dVersion','Version'],
+ ['dDate','Date'],['dAuthor','Author'],['dSupersedes','Supersedes'],['dPopulation','Population'],
+ ['dComparator','Comparator'],['dHorizon','Time horizon'],['dDecision','Decision supported']];
+function empty(t){ return '<p class="empty">' + esc(t) + '</p>'; }
+function buildReport(){
+  var h = '', i, j;
+
+  /* header */
+  var dl = '', any = false;
+  for (i = 0; i < DOC_FIELDS.length; i++){
+    var v = $(DOC_FIELDS[i][0]).value;
+    if (v) any = true;
+    dl += '<dt>' + esc(DOC_FIELDS[i][1]) + '</dt><dd>' + esc(v || '—') + '</dd>';
+  }
+  h += '<h3>Document header</h3>' + (any ? '<dl>' + dl + '</dl>'
+    : '<dl>' + dl + '</dl>' + empty('Header not completed. Product, version, date, author, population, '
+      + 'comparator and horizon belong on every artefact.'));
+
+  /* method */
+  h += '<h3>1 · Method selection</h3>';
+  var m = STATE.method;
+  if (m.terminal){
+    var T = MS_TERM[m.terminal];
+    h += '<p><b>Terminal ' + esc(m.terminal) + ' — ' + esc(T.name) + '</b> (' + esc(T.ch) + ')</p>';
+    for (i = 0; i < m.trail.length; i++)
+      h += '<div class="qa"><b>' + esc(m.trail[i].q) + '</b> ' + esc(m.trail[i].a) + '</div>';
+    if (m.pre) h += '<p><b>Run first:</b> ' + esc(m.pre) + '.</p>';
+    if (m.gates.time) h += '<p><b>Time gate.</b> ' + esc(MS_GATE_TEXT.time[m.gates.time]) + '</p>';
+    if (m.gates.aud) h += '<p><b>Audience gate.</b> ' + esc(MS_GATE_TEXT.aud[m.gates.aud]) + '</p>';
+    h += '<p>' + esc(T.why) + '</p>';
+  } else h += empty('The method-selection questionnaire has not been completed.');
+
+  /* absolute measures */
+  h += '<h3>2 · Absolute measures — NNT and NNH</h3>';
+  var b = readBinary(), r = readRate(), got = false;
+  if (b.ok){
+    got = true;
+    h += '<p><b>' + esc(b.label || 'Outcome') + '</b> — ' + esc(b.nameT || 'product') + ' '
+      + fx(100 * b.o.pT, 1) + '% (' + b.eT + '/' + b.nT + ') against ' + esc(b.nameC || 'comparator') + ' '
+      + fx(100 * b.o.pC, 1) + '% (' + b.eC + '/' + b.nC + ') at ' + esc(b.horizon || 'the stated horizon')
+      + '. Risk difference ' + fx(100 * b.o.rd, 1) + ' pp ' + esc(ci(100 * b.o.lo, 100 * b.o.hi, 1))
+      + '; risk ratio ' + fx(b.o.rr, 2) + '; ' + esc(nntText(b.o)) + '.</p>';
+  }
+  if (r.ok){
+    got = true;
+    h += '<p><b>' + esc(r.label || 'Event') + '</b> — ' + esc(r.nameT || 'product') + ' '
+      + fx(r.o.irT, 2) + ' against ' + esc(r.nameC || 'comparator') + ' ' + fx(r.o.irC, 2)
+      + ' per 100 patient-years. Rate difference ' + fx(r.o.ird, 2) + ' ' + esc(ci(r.o.lo, r.o.hi, 2))
+      + '; rate ratio ' + fx(r.o.rr, 2) + ' ' + esc(ci(r.o.rrLo, r.o.rrHi, 2)) + '; excess '
+      + fx(r.o.excess, 1) + ' per 1,000 patient-years ' + esc(ci(r.o.excessLo, r.o.excessHi, 1))
+      + '; ' + (r.o.kind === 'NNTB' ? 'NNTB ' : 'NNH ') + fx(r.o.nn, 0) + ' per year.</p>';
+  }
+  if (!got) h += empty('No absolute measures computed.');
+
+  /* effects table */
+  h += '<h3>3 · Effects table</h3>';
+  var er = STATE.effects.rows;
+  if (er.length){
+    h += '<div class="tablewrap"><table><thead><tr><th>Effect</th><th>Short description</th><th>Unit</th>'
+      + '<th>' + esc($('efComp').value || 'Comparator') + '</th><th>' + esc($('efProd').value || 'Product')
+      + '</th><th>Uncertainties / strength of evidence</th><th>References</th></tr></thead><tbody>';
+    var secs = [['fav','Favourable effects'],['unfav','Unfavourable effects']];
+    for (i = 0; i < secs.length; i++){
+      h += '<tr class="grouphead"><td colspan="7">' + secs[i][1] + '</td></tr>';
+      for (j = 0; j < er.length; j++){
+        if (er[j].s !== secs[i][0]) continue;
+        h += '<tr><td>' + esc(er[j].e) + '</td><td>' + esc(er[j].d) + '</td><td>' + esc(er[j].u)
+          + '</td><td>' + esc(er[j].c) + '</td><td>' + esc(er[j].p) + '</td><td>' + esc(er[j].x)
+          + '</td><td>' + esc(er[j].r) + '</td></tr>';
+      }
+    }
+    h += '</tbody></table></div>';
+    if ($('efCaption').value) h += '<p class="small muted">' + esc($('efCaption').value) + '</p>';
+    if ($('efOrder').value) h += '<p class="small muted"><b>Row ordering.</b> ' + esc($('efOrder').value) + '</p>';
+    if ($('efNot').value) h += '<p class="small muted"><b>Effects considered and not tabulated.</b> '
+      + esc($('efNot').value) + '</p>';
+  } else h += empty('No effects tabulated.');
+
+  /* mcda */
+  h += '<h3>4 · Multi-criteria decision analysis</h3>';
+  var cs = STATE.mcda.criteria;
+  if (cs.length){
+    var p = mPair(), model = mcdaCompute(cs), diff = mcdaDiff(model, p.a, p.b);
+    var nm = { A:mAltName('A'), B:mAltName('B'), C:mAltName('C') };
+    h += '<p>Alternatives: A = ' + esc(nm.A) + '; B = ' + esc(nm.B) + '; C = ' + esc(nm.C)
+      + '. Overall value scores: V(A) = ' + fx(model.scores.A, 1) + ', V(B) = ' + fx(model.scores.B, 1)
+      + ', V(C) = ' + fx(model.scores.C, 1) + '. Displayed difference ' + esc(p.a) + ' − ' + esc(p.b)
+      + ' = <b>' + fxs(diff.total, 1) + '</b> value points (favourable-effect contribution '
+      + fxs(diff.benefit, 1) + ', unfavourable-effect contribution ' + fxs(diff.risk, 1) + ').</p>';
+    h += '<div class="tablewrap"><table><thead><tr><th>Criterion</th><th>Scale worst → best</th>'
+      + '<th class="num">x(A)</th><th class="num">x(B)</th><th class="num">x(C)</th>'
+      + '<th class="num">Swing pts</th><th class="num">ω</th><th class="num">v(A)</th>'
+      + '<th class="num">v(B)</th><th class="num">v(C)</th><th class="num">ω·Δ</th>'
+      + '<th class="num">Reverses at</th></tr></thead><tbody>';
+    for (i = 0; i < cs.length; i++){
+      var tp = tippingPoint(cs, i, p.a, p.b);
+      h += '<tr><td>' + esc(cs[i].name) + '</td><td>' + esc(cs[i].worst + ' → ' + cs[i].best
+        + (cs[i].dir === 'down' ? ' (lower better)' : '')) + '</td>'
+        + '<td class="num">' + esc(cs[i].a) + '</td><td class="num">' + esc(cs[i].b) + '</td>'
+        + '<td class="num">' + esc(cs[i].c) + '</td><td class="num">' + esc(cs[i].swing) + '</td>'
+        + '<td class="num">' + fmtWeight(model.rows[i].weight) + '</td>'
+        + '<td class="num">' + fx(model.rows[i].v.A, 1) + '</td><td class="num">' + fx(model.rows[i].v.B, 1)
+        + '</td><td class="num">' + fx(model.rows[i].v.C, 1) + '</td>'
+        + '<td class="num">' + fxs(diff.rows[i].contrib, 2) + '</td>'
+        + '<td class="num">' + (tp === null ? 'no attainable weight' : fx(tp, 0)) + '</td></tr>';
+    }
+    h += '<tr class="total"><td>Total</td><td></td><td></td><td></td><td></td><td class="num">'
+      + fx(model.totalSwing, 0) + '</td><td class="num">1.000</td><td class="num">'
+      + fx(model.scores.A, 1) + '</td><td class="num">' + fx(model.scores.B, 1) + '</td><td class="num">'
+      + fx(model.scores.C, 1) + '</td><td class="num">' + fxs(diff.total, 1) + '</td><td></td></tr>';
+    h += '</tbody></table></div><p class="small muted">Partial values are linear: '
+      + 'v = 100 × (x − worst) / (best − worst), reversed where lower is better. Weights are '
+      + 'swing points normalised to sum to one; a weight is a statement about moving the stated range and '
+      + 'is not comparable with any other model’s.</p>';
+  } else h += empty('No multi-criteria model built.');
+
+  /* brat */
+  h += '<h3>5 · BRAT — value tree and key benefit-risk summary</h3>';
+  var root = $('btRoot').value, fav = STATE.brat.fav, unf = STATE.brat.unfav;
+  if (root || fav.length || unf.length){
+    if (root) h += '<p><b>Root.</b> ' + esc(root) + '</p>';
+    var tl = function(arr, t){
+      if (!arr.length) return '';
+      var s = '<p style="margin-bottom:.2em"><b>' + t + '</b></p><ul style="margin-top:0;font-size:.86rem">';
+      for (var q = 0; q < arr.length; q++)
+        s += '<li>' + esc(arr[q].name) + (arr[q].unit ? ' — <i>' + esc(arr[q].unit) + '</i>' : '')
+          + (arr[q].src ? ' · ' + esc(arr[q].src) : '') + '</li>';
+      return s + '</ul>';
+    };
+    h += tl(fav, 'Favourable effects') + tl(unf, 'Unfavourable effects');
+    if ($('btExcl').value) h += '<p class="small muted"><b>Excluded, with reasons and retained '
+      + 'estimates.</b> ' + esc($('btExcl').value) + '</p>';
+  } else h += empty('No value tree entered.');
+  var br = STATE.brat.rows, res = brResults();
+  if (br.length){
+    h += '<div class="tablewrap"><table><thead><tr><th>Criterion</th><th>Display metric</th>'
+      + '<th>Estimate (95% CI)</th><th>Denominator</th><th class="num">Rank</th></tr></thead><tbody>';
+    for (i = 0; i < br.length; i++){
+      h += '<tr><td>' + esc(br[i].name) + '</td><td>' + (res[i] ? esc(res[i].metric) : '—') + '</td>'
+        + '<td>' + (res[i] ? esc((res[i].est >= 0 ? '+' : '') + fx(res[i].est, res[i].dp) + ' '
+            + ci(res[i].lo, res[i].hi, res[i].dp)) : 'not estimable') + '</td>'
+        + '<td>' + (res[i] ? esc(res[i].denom) : '—') + '</td>'
+        + '<td class="num">' + esc(br[i].rank) + '</td></tr>';
+    }
+    h += '</tbody></table></div><div style="margin-top:.8em">' + $('brPlot').innerHTML + '</div>';
+  } else h += empty('No key benefit-risk summary rows.');
+
+  /* proact */
+  h += '<h3>6 · PrOACT-URL</h3>';
+  var pany = false;
+  for (i = 0; i < PROACT.length; i++) if ((STATE.proact[PROACT[i][0]] || '').trim()) pany = true;
+  if (pany){
+    for (i = 0; i < PROACT.length; i++){
+      var v2 = (STATE.proact[PROACT[i][0]] || '').trim();
+      h += '<p style="margin-bottom:.15em"><b>' + esc(PROACT[i][0] + ' — ' + PROACT[i][1]) + '</b></p>';
+      h += v2 ? '<blockquote>' + esc(v2) + '</blockquote>'
+              : '<p class="empty" style="margin-left:.8em">Not completed.</p>';
+    }
+    if (!(STATE.proact.R || '').trim() || !(STATE.proact.L || '').trim())
+      h += '<p class="small"><b>Note.</b> Risk attitude and Linked decisions are incomplete. They are the '
+        + 'two elements a regulator reads most closely.</p>';
+  } else h += empty('The PrOACT-URL worksheet is empty.');
+
+  /* wording */
+  h += '<h3>7 · Conclusion wording selected</h3>';
+  var w = Object.keys(STATE.wording);
+  if (w.length){
+    for (i = 0; i < w.length; i++){
+      var pat = wFind(w[i]);
+      if (pat) h += '<p style="margin-bottom:.15em"><b>' + esc(pat.id + ' · ' + pat.name)
+        + '</b></p><blockquote>' + esc(pat.t) + '</blockquote>';
+    }
+    h += '<p class="small muted">Bracketed slots must be filled before use. State the direction, the '
+      + 'population, the conditions and what would change the conclusion — all four, always.</p>';
+  } else h += empty('No conclusion pattern selected.');
+
+  h += '<hr><p class="small muted">Generated by the Benefit–Risk Workbench, the educational '
+    + 'companion to <i>Practical Benefit–Risk Assessment in Pharmacovigilance: From Safety Signals '
+    + 'to Regulatory Decisions</i> by Dr Hafez Selim, MD, PhD (Selim Medical Press). This is a teaching '
+    + 'worksheet, not a regulatory document. Worked-example data are fictional. The views expressed are '
+    + 'the author’s personal views only. Corrections: abdu94@gmail.com. The full terms of use are '
+    + 'printed on the final page.</p>';
+  $('repOut').innerHTML = h;
+}
+/* Document-header fields are read at build time, so no listener is needed. */
+</script>
+</body>
+</html>
