@@ -1133,6 +1133,36 @@ function activate(name){
 $('tabs').addEventListener('click', function(e){
   var b = e.target.closest('button[data-panel]'); if (b) activate(b.getAttribute('data-panel'));
 });
+
+/* ---------------- deep links: /#nnt, /#mcda, /#brat ... ----------------
+ * A URL fragment opens that module directly once the terms are accepted.
+ * Clicking a tab keeps the fragment in step, so any view can be copied as a link. */
+var PANEL_ALIASES = {
+  'method':'method', 'selector':'method', 'method-selector':'method',
+  'nnt':'nnt', 'nnh':'nnt', 'nnt-nnh':'nnt',
+  'effects':'effects', 'effects-table':'effects',
+  'mcda':'mcda', 'sensitivity':'mcda',
+  'brat':'brat',
+  'proact':'proact', 'proact-url':'proact', 'proacturl':'proact',
+  'wording':'wording', 'conclusions':'wording',
+  'report':'report', 'summary':'report'
+};
+function hashPanel(){
+  var h = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+  return Object.prototype.hasOwnProperty.call(PANEL_ALIASES, h) ? PANEL_ALIASES[h] : null;
+}
+function applyHashPanel(){
+  var name = hashPanel();
+  if (name && !$('app').hidden) activate(name);
+}
+$('beginBtn').addEventListener('click', applyHashPanel);
+window.addEventListener('hashchange', applyHashPanel);
+$('tabs').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-panel]');
+  if (b && window.history && window.history.replaceState)
+    window.history.replaceState(null, '', '#' + b.getAttribute('data-panel'));
+});
+applyHashPanel();
 function printReport(){ activate('report'); buildReport(); setTimeout(function(){ window.print(); }, 60); }
 $('printBtn').addEventListener('click', printReport);
 $('repPrint').addEventListener('click', printReport);

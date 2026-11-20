@@ -68,6 +68,27 @@ of truth — the `TOOL_URL` environment variable — so there is nothing to find
 
 ---
 
+## Deep links to a single module
+
+A URL fragment opens one module directly, after the reader accepts the terms:
+
+| Fragment | Opens |
+| --- | --- |
+| `#method` | Method selector |
+| `#nnt` | NNT / NNH calculator |
+| `#effects` | Effects table builder |
+| `#mcda` | MCDA workbench (and its sensitivity analysis) |
+| `#brat` | BRAT worksheet |
+| `#proact` | PrOACT-URL worksheet |
+| `#wording` | Conclusion wording library |
+| `#report` | Assessment summary and printable report |
+
+Example: `https://abdu94-hash.github.io/benefit-risk-workbench/#nnt`
+
+Clicking a tab inside the tool updates the fragment, so any view can be copied
+out of the address bar as a link. An unknown fragment is ignored and the tool
+opens on the method selector.
+
 ## Search-engine indexing
 
 `robots.txt` allows all crawlers and points at `sitemap.xml`. To speed indexing up, add the
